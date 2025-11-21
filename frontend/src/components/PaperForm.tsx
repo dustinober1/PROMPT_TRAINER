@@ -4,9 +4,10 @@ import type { PaperCreate, Rubric } from '../services/api';
 
 interface PaperFormProps {
   onSuccess?: () => void;
+  onToast?: (type: 'success' | 'error' | 'info', message: string) => void;
 }
 
-export default function PaperForm({ onSuccess }: PaperFormProps) {
+export default function PaperForm({ onSuccess, onToast }: PaperFormProps) {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [rubricId, setRubricId] = useState<string>('');
@@ -37,11 +38,15 @@ export default function PaperForm({ onSuccess }: PaperFormProps) {
 
     // Validation
     if (!title.trim()) {
-      setError('Title is required');
+      const msg = 'Title is required';
+      setError(msg);
+      onToast?.('error', msg);
       return;
     }
     if (!content.trim()) {
-      setError('Content is required');
+      const msg = 'Content is required';
+      setError(msg);
+      onToast?.('error', msg);
       return;
     }
 
@@ -59,7 +64,9 @@ export default function PaperForm({ onSuccess }: PaperFormProps) {
       await paperApi.create(paperData);
 
       // Success!
+      const successMsg = 'Paper submitted successfully';
       setSuccess(true);
+      onToast?.('success', successMsg);
       setTitle('');
       setContent('');
       setRubricId('');
@@ -72,7 +79,9 @@ export default function PaperForm({ onSuccess }: PaperFormProps) {
       // Clear success message after 3 seconds
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create paper');
+      const msg = err instanceof Error ? err.message : 'Failed to create paper';
+      setError(msg);
+      onToast?.('error', msg);
     } finally {
       setLoading(false);
     }

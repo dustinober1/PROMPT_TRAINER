@@ -77,3 +77,4 @@ I'm a product manager with limited coding experience who's looking to learn to b
 - Paper list/detail responses expose submission_date/created_at (no updated_at), and frontend types/UX were aligned.
 - Paper submission form now includes a rubric selector fed by `rubricApi.list()`.
 - Progress is tracked in `docs/sprint-2-progress.md` (Week 1 summary added).
+- Added toast notifications (success/error/info) in the frontend; PaperForm and RubricForm now surface status via toasts in addition to inline messages.
