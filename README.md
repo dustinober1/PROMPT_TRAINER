@@ -14,7 +14,7 @@ Prompt Trainer helps educators grade papers using AI, while continuously improvi
 - Core dependencies installed
 - Git repository initialized
 
-**Sprint 1 (Week 1): Complete** ✅
+**Sprint 1 (Days 1-4): Complete** ✅
 - Database schema designed (6 tables)
 - SQLAlchemy models created
 - FastAPI application running
@@ -22,7 +22,15 @@ Prompt Trainer helps educators grade papers using AI, while continuously improvi
 - Pydantic schemas for validation
 - Interactive API docs at /docs
 
-**Next: Sprint 1 (Week 2)** - Rubric builder and frontend setup
+**Sprint 1 (Days 5-7): Complete** ✅
+- Rubric API with nested criteria
+- Support for 3 scoring types (yes_no, meets, numerical)
+- Criterion management endpoints
+- Comprehensive validation rules
+- Full CRUD for rubrics and criteria
+- 12 total API endpoints working
+
+**Next: Sprint 1 (Days 8-10)** - Frontend setup with React
 
 ## Prerequisites
 
@@ -152,10 +160,24 @@ Refer to the MVP Development Plan for:
 - `PUT /api/papers/{id}` - Update a paper
 - `DELETE /api/papers/{id}` - Delete a paper
 
+### Rubrics API (NEW!)
+- `POST /api/rubrics/` - Create rubric with criteria (nested)
+- `GET /api/rubrics/` - List all rubrics
+- `GET /api/rubrics/{id}` - Get rubric with all criteria
+- `PUT /api/rubrics/{id}` - Update rubric metadata
+- `DELETE /api/rubrics/{id}` - Delete rubric and criteria
+- `PUT /api/rubrics/{id}/criteria/{criterion_id}` - Update criterion
+- `DELETE /api/rubrics/{id}/criteria/{criterion_id}` - Delete criterion
+
+**Scoring Types Supported:**
+- `yes_no` - Binary yes/no evaluation
+- `meets` - Meets/Does not meet expectations
+- `numerical` - Numeric scores (0-10)
+
 Visit `http://localhost:8000/docs` for interactive API testing!
 
 ---
 
 **Last Updated**: 2025-11-21
-**Phase**: Sprint 1 (Week 1 Complete)
-**Next**: Rubric Builder & Frontend Setup
+**Phase**: Sprint 1 (Day 5-7 Complete)
+**Next**: Frontend Setup (Day 8-10)
