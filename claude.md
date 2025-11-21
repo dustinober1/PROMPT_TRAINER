@@ -11,7 +11,7 @@ I'm a product manager with limited coding experience who's looking to learn to b
 ## Product Backlog
 - The product backlog is located at docs/backlog.md
 - The product Plan is located at docs/project-plan.md
-- Document sprint progress in docs/sprint-1-progress.md
+- Document sprint progress in docs/sprint1/sprint-1-progress.md, docs/sprint-2-progress.md, etc.
 
 ## Model
 - For prompt building testing, we will use Qwen/Qwen3-0.6B model you can download from huggensface.
@@ -27,4 +27,4 @@ I'm a product manager with limited coding experience who's looking to learn to b
 - Use feature branches for new features and bug fixes.
 - Commit messages should be clear and descriptive.
 - Use .gitignore to exclude unnecessary files from the repository and large files.
-- Push the changes after each iteration to ensure we can role back for any mistake.
+- Push the changes to github after each iteration to ensure we can role back for any mistake.
