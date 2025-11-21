@@ -11,6 +11,7 @@ I'm a product manager with limited coding experience who's looking to learn to b
 ## Product Backlog
 - The product backlog is located at docs/backlog.md
 - The product Plan is located at docs/project-plan.md
+- Document sprint progress in docs/sprint-1-progress.md
 
 ## Model
 - For prompt building testing, we will use Qwen/Qwen3-0.6B model you can download from huggensface.
