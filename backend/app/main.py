@@ -8,14 +8,28 @@ Tech Tip: FastAPI is "async-first" which means it can handle
 multiple requests simultaneously without blocking.
 """
 
+from contextlib import asynccontextmanager
+from datetime import datetime, timezone
+import os
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
 from app.core.database import init_db
-import os
 from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    """Lifecycle manager to handle startup/shutdown without deprecated hooks."""
+    init_db()
+    print(">> Prompt Trainer API started")
+    print(">> API Documentation: http://localhost:8000/docs")
+    yield
+    print(">> Prompt Trainer API shutting down")
+
 
 # Initialize FastAPI application
 app = FastAPI(
@@ -23,7 +37,8 @@ app = FastAPI(
     description="AI-powered paper grading system that learns from user feedback",
     version="0.1.0",
     docs_url="/docs",  # Swagger UI at http://localhost:8000/docs
-    redoc_url="/redoc"  # Alternative docs at http://localhost:8000/redoc
+    redoc_url="/redoc",  # Alternative docs at http://localhost:8000/redoc
+    lifespan=lifespan,
 )
 
 # CORS Configuration
@@ -39,27 +54,6 @@ app.add_middleware(
     allow_methods=["*"],  # Allow all HTTP methods (GET, POST, PUT, DELETE, etc.)
     allow_headers=["*"],  # Allow all headers
 )
-
-
-# Startup event - runs when server starts
-@app.on_event("startup")
-async def startup_event():
-    """
-    Initialize database when the application starts.
-
-    Tech Tip: This creates all tables if they don't exist.
-    Safe to run multiple times - won't delete existing data.
-    """
-    init_db()
-    print(">> Prompt Trainer API started")
-    print(f">> API Documentation: http://localhost:8000/docs")
-
-
-# Shutdown event - runs when server stops
-@app.on_event("shutdown")
-async def shutdown_event():
-    """Clean up resources when shutting down"""
-    print(">> Prompt Trainer API shutting down")
 
 
 # Root endpoint - health check
@@ -87,11 +81,10 @@ async def health_check():
 
     Future: Add database connection check, Ollama status, etc.
     """
-    from datetime import datetime
     return {
         "status": "healthy",
         "database": "connected",
-        "timestamp": datetime.utcnow().isoformat()
+        "timestamp": datetime.now(timezone.utc).isoformat()
     }
 
 

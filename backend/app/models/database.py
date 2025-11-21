@@ -9,12 +9,16 @@ You can access related data like: paper.evaluations or rubric.criteria
 """
 
 from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Float, Boolean, JSON
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
-from datetime import datetime
+from sqlalchemy.orm import relationship, declarative_base
+from datetime import datetime, timezone
 
 # Base class for all models
 Base = declarative_base()
+
+
+def utc_now():
+    """Return timezone-aware UTC timestamps for defaults."""
+    return datetime.now(timezone.utc)
 
 
 class Paper(Base):
@@ -32,8 +36,8 @@ class Paper(Base):
     # Paper metadata
     title = Column(String(255), nullable=False)
     content = Column(Text, nullable=False)  # Text allows unlimited length
-    submission_date = Column(DateTime, default=datetime.utcnow)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    submission_date = Column(DateTime, default=utc_now)
+    created_at = Column(DateTime, default=utc_now)
 
     # Relationships - SQLAlchemy automatically handles the connections
     # 'back_populates' creates a two-way link between models
@@ -63,7 +67,7 @@ class Rubric(Base):
     # Options: "yes_no", "meets", "numerical"
     scoring_type = Column(String(50), default="yes_no")
 
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=utc_now)
 
     # Relationships
     # cascade="all, delete-orphan" means: if rubric is deleted, delete its criteria too
@@ -123,7 +127,7 @@ class Prompt(Base):
     # Optional: track which prompt this was based on
     parent_version_id = Column(Integer, ForeignKey("prompts.id"), nullable=True)
 
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=utc_now)
     is_active = Column(Boolean, default=True)
 
     # Performance metrics (calculated after evaluations)
@@ -167,7 +171,7 @@ class Evaluation(Base):
     # FALSE = user corrected it
     is_correct = Column(Boolean, nullable=True)
 
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=utc_now)
 
     # Relationships
     paper = relationship("Paper", back_populates="evaluations")
@@ -204,7 +208,7 @@ class FeedbackEntry(Base):
     # Optional: user's explanation of why it was wrong
     user_explanation = Column(Text, nullable=True)
 
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=utc_now)
 
     # Relationships
     evaluation = relationship("Evaluation", back_populates="feedback_entries")
