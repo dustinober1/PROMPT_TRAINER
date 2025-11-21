@@ -1,0 +1,25 @@
+# Sprint 2 Progress (Week 1)
+
+## Overview
+- **Status**: In progress
+- **Focus**: Paper submission UX, rubric linkage, and alignment between backend and frontend types.
+
+## What Shipped
+- Papers can now be optionally associated with a rubric (`rubric_id` + `rubric_name` in responses).
+- Paper responses expose submission and created timestamps; frontend types and UI now match the backend (no stale `updated_at`).
+- Paper submission form includes a rubric selector populated from existing rubrics.
+- Paper list/detail views surface rubric information and correct timestamps.
+
+## Testing
+- Backend: `cd backend && source venv/bin/activate && pytest` (passes; uses temp SQLite).
+- Frontend: `cd frontend && npm run build` (passes).
+
+## Notes and Tips
+- The new `rubric_id` column requires a fresh database. For SQLite, delete `backend/prompt_trainer.db` or run `drop_all_tables()` then restart to recreate tables.
+- API validation returns 404 if a provided `rubric_id` does not exist.
+- Use `VITE_API_URL` to point the frontend at the running backend (default `http://127.0.0.1:8000`).
+
+## Next Up
+- Wire evaluation flow (paper + rubric submission to model stub).
+- Add basic toasts/notifications around form submissions.
+- Expand backend tests for additional paper/rubric edge cases.

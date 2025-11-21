@@ -76,3 +76,4 @@ I'm a product manager with limited coding experience who's looking to learn to b
 - Papers can now be optionally associated with a rubric (backend `rubric_id` + `rubric_name` in responses); validation ensures rubric exists when provided.
 - Paper list/detail responses expose submission_date/created_at (no updated_at), and frontend types/UX were aligned.
 - Paper submission form now includes a rubric selector fed by `rubricApi.list()`.
+- Progress is tracked in `docs/sprint-2-progress.md` (Week 1 summary added).
