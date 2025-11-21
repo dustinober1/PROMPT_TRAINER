@@ -95,10 +95,14 @@ async def health_check():
     }
 
 
-# Future: Include routers for different resources
-# Example:
-# from app.api import papers, rubrics, evaluations, prompts
-# app.include_router(papers.router, prefix="/api/papers", tags=["Papers"])
+# Include API routers
+from app.api import papers
+
+# Papers API - CRUD operations for submitted papers
+app.include_router(papers.router, prefix="/api/papers", tags=["Papers"])
+
+# Future routers:
+# from app.api import rubrics, evaluations, prompts
 # app.include_router(rubrics.router, prefix="/api/rubrics", tags=["Rubrics"])
 # app.include_router(evaluations.router, prefix="/api/evaluations", tags=["Evaluations"])
 # app.include_router(prompts.router, prefix="/api/prompts", tags=["Prompts"])
