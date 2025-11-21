@@ -36,16 +36,23 @@ class Paper(Base):
     # Paper metadata
     title = Column(String(255), nullable=False)
     content = Column(Text, nullable=False)  # Text allows unlimited length
+    rubric_id = Column(Integer, ForeignKey("rubrics.id", ondelete="SET NULL"), nullable=True)
     submission_date = Column(DateTime, default=utc_now)
     created_at = Column(DateTime, default=utc_now)
 
     # Relationships - SQLAlchemy automatically handles the connections
     # 'back_populates' creates a two-way link between models
     evaluations = relationship("Evaluation", back_populates="paper", cascade="all, delete-orphan")
+    rubric = relationship("Rubric", back_populates="papers")
 
     def __repr__(self):
         """String representation for debugging"""
         return f"<Paper(id={self.id}, title='{self.title}')>"
+
+    @property
+    def rubric_name(self):
+        """Helper to expose rubric name without extra queries"""
+        return self.rubric.name if self.rubric else None
 
 
 class Rubric(Base):
@@ -72,6 +79,7 @@ class Rubric(Base):
     # Relationships
     # cascade="all, delete-orphan" means: if rubric is deleted, delete its criteria too
     criteria = relationship("Criterion", back_populates="rubric", cascade="all, delete-orphan")
+    papers = relationship("Paper", back_populates="rubric", passive_deletes=True)
     evaluations = relationship("Evaluation", back_populates="rubric")
 
     def __repr__(self):

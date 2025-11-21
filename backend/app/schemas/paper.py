@@ -32,6 +32,9 @@ class PaperCreate(BaseModel):
     """
     title: str = Field(..., min_length=1, max_length=255, description="Paper title")
     content: str = Field(..., min_length=10, description="Paper content (minimum 10 characters)")
+    rubric_id: Optional[int] = Field(
+        None, description="Optional rubric to associate with this paper"
+    )
 
     # Validator to ensure title isn't just whitespace
     @field_validator('title')
@@ -59,7 +62,8 @@ class PaperCreate(BaseModel):
             "examples": [
                 {
                     "title": "The Impact of AI on Education",
-                    "content": "Artificial Intelligence is transforming education in unprecedented ways. From personalized learning experiences to automated grading systems, AI technologies are reshaping how students learn and teachers teach."
+                    "content": "Artificial Intelligence is transforming education in unprecedented ways. From personalized learning experiences to automated grading systems, AI technologies are reshaping how students learn and teachers teach.",
+                    "rubric_id": 1
                 }
             ]
         }
@@ -77,6 +81,9 @@ class PaperUpdate(BaseModel):
     """
     title: Optional[str] = Field(None, min_length=1, max_length=255)
     content: Optional[str] = Field(None, min_length=10)
+    rubric_id: Optional[int] = Field(
+        None, description="Update associated rubric (use null to remove)"
+    )
 
     @field_validator('title')
     @classmethod
@@ -109,6 +116,8 @@ class PaperResponse(BaseModel):
     id: int
     title: str
     content: str
+    rubric_id: Optional[int] = None
+    rubric_name: Optional[str] = None
     submission_date: datetime
     created_at: datetime
 
@@ -120,6 +129,8 @@ class PaperResponse(BaseModel):
                     "id": 1,
                     "title": "The Impact of AI on Education",
                     "content": "Artificial Intelligence is transforming education...",
+                    "rubric_id": 1,
+                    "rubric_name": "Essay Rubric",
                     "submission_date": "2025-11-21T17:30:00",
                     "created_at": "2025-11-21T17:30:00"
                 }
@@ -139,6 +150,8 @@ class PaperList(BaseModel):
     """
     id: int
     title: str
+    rubric_id: Optional[int] = None
+    rubric_name: Optional[str] = None
     content_preview: str = Field(..., description="First 150 characters of content")
     submission_date: datetime
 

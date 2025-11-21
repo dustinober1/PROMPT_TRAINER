@@ -38,18 +38,22 @@ export interface Paper {
   id: number;
   title: string;
   content: string;
+  rubric_id?: number | null;
+  rubric_name?: string | null;
+  submission_date: string;
   created_at: string;
-  updated_at: string;
 }
 
 export interface PaperCreate {
   title: string;
   content: string;
+  rubric_id?: number | null;
 }
 
 export interface PaperUpdate {
   title?: string;
   content?: string;
+  rubric_id?: number | null;
 }
 
 export const paperApi = {
@@ -115,7 +119,6 @@ export interface Rubric {
   name: string;
   scoring_type: ScoringType;
   created_at: string;
-  updated_at: string;
   criteria: Criterion[];
 }
 

@@ -71,3 +71,8 @@ I'm a product manager with limited coding experience who's looking to learn to b
 ## Sprint 2 Planning Updates
 - Backlog Sprint 2 now focuses on: paper submission UI + list, rubric builder with yes/no scoring, rubric selection on submit, and UI validation/feedback.
 - Project plan Month 2 Week 5-6 updated to highlight the Paper & Rubric management deliverables above.
+
+## Sprint 2 In-Progress Changes
+- Papers can now be optionally associated with a rubric (backend `rubric_id` + `rubric_name` in responses); validation ensures rubric exists when provided.
+- Paper list/detail responses expose submission_date/created_at (no updated_at), and frontend types/UX were aligned.
+- Paper submission form now includes a rubric selector fed by `rubricApi.list()`.

@@ -38,18 +38,41 @@ def test_health_endpoint():
 def test_paper_crud_flow():
     client = TestClient(app)
 
+    # Create rubric to associate
+    rubric_resp = client.post(
+        "/api/rubrics/",
+        json={
+            "name": "Essay Rubric",
+            "description": "Baseline rubric",
+            "scoring_type": "yes_no",
+            "criteria": [
+                {"name": "Thesis", "description": "Has thesis", "order": 0},
+                {"name": "Grammar", "description": "Good grammar", "order": 1},
+            ],
+        },
+    )
+    rubric_id = rubric_resp.json()["id"]
+
     # Create
     create_resp = client.post(
         "/api/papers/",
-        json={"title": "Test Paper", "content": "This is Sprint 1 paper content."},
+        json={
+            "title": "Test Paper",
+            "content": "This is Sprint 1 paper content.",
+            "rubric_id": rubric_id,
+        },
     )
     assert create_resp.status_code == 201
     paper_id = create_resp.json()["id"]
+    assert create_resp.json()["rubric_id"] == rubric_id
 
     # List shows one paper
     list_resp = client.get("/api/papers/")
     assert list_resp.status_code == 200
-    assert len(list_resp.json()) == 1
+    papers = list_resp.json()
+    assert len(papers) == 1
+    assert papers[0]["rubric_id"] == rubric_id
+    assert papers[0]["rubric_name"] == "Essay Rubric"
 
     # Update title
     update_resp = client.put(f"/api/papers/{paper_id}", json={"title": "Updated Title"})
