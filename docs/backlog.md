@@ -390,10 +390,12 @@ This backlog organizes all features and tasks for the Prompt Trainer application
 - UI-001: Basic navigation structure
 
 #### Sprint 2: Basic Grading (2 weeks)
-- RM-001: Create basic rubric builder
+- RM-001: Create basic rubric builder (backend + UI)
 - RM-002: Implement Yes/No scoring type
-- PE-001: Create paper submission interface
-- RM-004: Associate rubric with paper submission
+- PE-001: Create paper submission interface (frontend form + list)
+- RM-004: Associate rubric with paper submission (UI selects rubric)
+- UI-003: Form validation and error messages
+- UI-006: Toast/inline success + error states for submissions
 
 #### Sprint 3: Model Integration (2 weeks)
 - MI-001: Create model abstraction layer

@@ -67,3 +67,7 @@ I'm a product manager with limited coding experience who's looking to learn to b
 - Added regression tests in `backend/app/tests/test_sprint1_endpoints.py` that cover health, paper CRUD, rubric CRUD, and criterion guard using a temp SQLite DB.
 - Switched FastAPI lifecycle to `lifespan` and made timestamps timezone-aware to remove deprecation warnings.
 - Fixed frontend builds by using type-only imports for API types in new components.
+
+## Sprint 2 Planning Updates
+- Backlog Sprint 2 now focuses on: paper submission UI + list, rubric builder with yes/no scoring, rubric selection on submit, and UI validation/feedback.
+- Project plan Month 2 Week 5-6 updated to highlight the Paper & Rubric management deliverables above.

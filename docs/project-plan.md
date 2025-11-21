@@ -418,10 +418,11 @@ Prompt Trainer solves this by:
 ---
 
 ### Month 2: Core Features
-**Week 5-6**: Paper & Rubric Management
-- [ ] Paper submission interface
-- [ ] Rubric builder UI and backend
-- [ ] Paper-rubric association
+**Week 5-6**: Paper & Rubric Management (Sprint 2 focus)
+- [ ] Paper submission interface (frontend form + list wired to API)
+- [ ] Rubric builder UI and backend (create/list + yes/no scoring)
+- [ ] Paper-rubric association (select rubric on submit)
+- [ ] UI validation and success/error feedback
 
 **Week 7-8**: Model Integration
 - [ ] Model abstraction layer
