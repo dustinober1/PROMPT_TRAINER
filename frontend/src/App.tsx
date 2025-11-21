@@ -4,6 +4,7 @@ import PaperForm from './components/PaperForm'
 import PapersList from './components/PapersList'
 import RubricForm from './components/RubricForm'
 import RubricsList from './components/RubricsList'
+import { ToastContainer } from './components/Toast'
 import { healthApi } from './services/api'
 
 type ActiveTab = 'papers' | 'rubrics';
@@ -11,6 +12,7 @@ type ActiveTab = 'papers' | 'rubrics';
 function App() {
   const [backendStatus, setBackendStatus] = useState<'checking' | 'connected' | 'error'>('checking')
   const [activeTab, setActiveTab] = useState<ActiveTab>('papers')
+  const [toasts, setToasts] = useState<{ id: number; type: 'success' | 'error' | 'info'; message: string }[]>([])
 
   useEffect(() => {
     // Check backend health on mount
@@ -27,11 +29,21 @@ function App() {
     window.dispatchEvent(new Event('rubricCreated'))
   }
 
+  const pushToast = (type: 'success' | 'error' | 'info', message: string) => {
+    const id = Date.now() + Math.random()
+    setToasts((prev) => [...prev, { id, type, message }])
+  }
+
+  const dismissToast = (id: number) => {
+    setToasts((prev) => prev.filter((toast) => toast.id !== id))
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navigation />
 
       <main className="container mx-auto px-4 py-8">
+        <ToastContainer toasts={toasts} onDismiss={dismissToast} />
         <div className="max-w-6xl mx-auto">
           {/* Backend Status Indicator */}
           <div className={`mb-6 px-4 py-2 rounded-lg flex items-center justify-between ${
@@ -78,7 +90,7 @@ function App() {
           {activeTab === 'papers' && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div>
-                <PaperForm onSuccess={handlePaperSubmitted} />
+                <PaperForm onSuccess={handlePaperSubmitted} onToast={pushToast} />
               </div>
               <div>
                 <PapersList />
@@ -90,7 +102,7 @@ function App() {
           {activeTab === 'rubrics' && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div>
-                <RubricForm onSuccess={handleRubricCreated} />
+                <RubricForm onSuccess={handleRubricCreated} onToast={pushToast} />
               </div>
               <div>
                 <RubricsList />

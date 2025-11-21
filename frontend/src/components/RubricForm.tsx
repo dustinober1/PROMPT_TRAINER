@@ -4,9 +4,10 @@ import type { RubricCreate, ScoringType, CriterionCreate } from '../services/api
 
 interface RubricFormProps {
   onSuccess?: () => void;
+  onToast?: (type: 'success' | 'error' | 'info', message: string) => void;
 }
 
-export default function RubricForm({ onSuccess }: RubricFormProps) {
+export default function RubricForm({ onSuccess, onToast }: RubricFormProps) {
   const [name, setName] = useState('');
   const [scoringType, setScoringType] = useState<ScoringType>('yes_no');
   const [criteria, setCriteria] = useState<CriterionCreate[]>([
@@ -48,14 +49,18 @@ export default function RubricForm({ onSuccess }: RubricFormProps) {
 
     // Validation
     if (!name.trim()) {
-      setError('Rubric name is required');
+      const msg = 'Rubric name is required';
+      setError(msg);
+      onToast?.('error', msg);
       return;
     }
 
     // Check all criteria have names
     const emptyCriteria = criteria.filter(c => !c.name.trim());
     if (emptyCriteria.length > 0) {
-      setError('All criteria must have a name');
+      const msg = 'All criteria must have a name';
+      setError(msg);
+      onToast?.('error', msg);
       return;
     }
 
@@ -77,7 +82,9 @@ export default function RubricForm({ onSuccess }: RubricFormProps) {
       await rubricApi.create(rubricData);
 
       // Success!
+      const successMsg = 'Rubric created successfully';
       setSuccess(true);
+      onToast?.('success', successMsg);
       setName('');
       setScoringType('yes_no');
       setCriteria([{ name: '', description: '', order: 0 }]);
@@ -89,7 +96,9 @@ export default function RubricForm({ onSuccess }: RubricFormProps) {
       // Clear success message after 3 seconds
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create rubric');
+      const msg = err instanceof Error ? err.message : 'Failed to create rubric';
+      setError(msg);
+      onToast?.('error', msg);
     } finally {
       setLoading(false);
     }
