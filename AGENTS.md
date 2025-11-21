@@ -78,3 +78,4 @@ I'm a product manager with limited coding experience who's looking to learn to b
 - Paper submission form now includes a rubric selector fed by `rubricApi.list()`.
 - Progress is tracked in `docs/sprint-2-progress.md` (Week 1 summary added).
 - Added toast notifications (success/error/info) in the frontend; PaperForm and RubricForm now surface status via toasts in addition to inline messages.
+- Stubbed Evaluation API (`POST /api/evaluations/`) creates evaluation records, auto-creates a default prompt if none provided, and generates a simple model_response. Covered by pytest.
