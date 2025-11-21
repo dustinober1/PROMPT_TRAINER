@@ -9,6 +9,7 @@
 - Paper responses expose submission and created timestamps; frontend types and UI now match the backend (no stale `updated_at`).
 - Paper submission form includes a rubric selector populated from existing rubrics.
 - Paper list/detail views surface rubric information and correct timestamps.
+- Added toast notifications (success/error/info) for paper and rubric submissions so users get immediate feedback alongside inline messages.
 
 ## Testing
 - Backend: `cd backend && source venv/bin/activate && pytest` (passes; uses temp SQLite).
