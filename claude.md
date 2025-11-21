@@ -26,3 +26,4 @@ I'm a product manager with limited coding experience who's looking to learn to b
 - Use feature branches for new features and bug fixes.
 - Commit messages should be clear and descriptive.
 - Use .gitignore to exclude unnecessary files from the repository and large files.
+- Push the changes after each iteration to ensure we can role back for any mistake.
