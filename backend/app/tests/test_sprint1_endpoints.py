@@ -152,3 +152,45 @@ def test_rubric_crud_and_criterion_guards():
     final_list = client.get("/api/rubrics/")
     assert final_list.status_code == 200
     assert final_list.json() == []
+
+
+def test_evaluation_creation_stub():
+    client = TestClient(app)
+
+    # Create rubric
+    rubric_resp = client.post(
+        "/api/rubrics/",
+        json={
+            "name": "Essay Rubric",
+            "description": "Baseline rubric",
+            "scoring_type": "yes_no",
+            "criteria": [
+                {"name": "Thesis", "description": "Has thesis", "order": 0},
+                {"name": "Grammar", "description": "Good grammar", "order": 1},
+            ],
+        },
+    )
+    rubric_id = rubric_resp.json()["id"]
+
+    # Create paper
+    paper_resp = client.post(
+        "/api/papers/",
+        json={
+            "title": "Test Paper",
+            "content": "This is content for evaluation.",
+            "rubric_id": rubric_id,
+        },
+    )
+    paper_id = paper_resp.json()["id"]
+
+    # Create evaluation (stubbed)
+    eval_resp = client.post(
+        "/api/evaluations/",
+        json={"paper_id": paper_id, "rubric_id": rubric_id},
+    )
+    assert eval_resp.status_code == 201
+    payload = eval_resp.json()
+    assert payload["paper_id"] == paper_id
+    assert payload["rubric_id"] == rubric_id
+    assert "prompt_id" in payload
+    assert payload["model_response"] is not None

@@ -1,0 +1,118 @@
+"""
+Evaluation API Endpoints (stubbed)
+
+Creates evaluation records using papers and rubrics. If no prompt_id
+is supplied, a default prompt is created automatically.
+"""
+
+import json
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
+from typing import List
+from app.core.database import get_db
+from app.models.database import Evaluation, Paper, Rubric, Prompt
+from app.schemas.evaluation import (
+    EvaluationCreate,
+    EvaluationResponse,
+    EvaluationListItem,
+)
+
+router = APIRouter()
+
+
+def _get_or_create_default_prompt(db: Session) -> Prompt:
+    """Ensure at least one prompt exists and return it."""
+    prompt = db.query(Prompt).order_by(Prompt.id.asc()).first()
+    if prompt:
+        return prompt
+
+    prompt = Prompt(
+        version=1,
+        template_text="Default evaluation prompt (stub)",
+        parent_version_id=None,
+        is_active=True,
+        accuracy_rate=None,
+        total_evaluations=0,
+    )
+    db.add(prompt)
+    db.flush()
+    return prompt
+
+
+def _build_stub_response(rubric: Rubric) -> str:
+    """Generate a simple stub response matching rubric criteria."""
+    criteria = rubric.criteria or []
+    entries = [
+        {
+            "criterion_id": c.id,
+            "score": "yes",
+            "reasoning": "Stubbed evaluation response",
+        }
+        for c in criteria
+    ]
+    return {"evaluations": entries}
+
+
+@router.post("/", response_model=EvaluationResponse, status_code=status.HTTP_201_CREATED)
+async def create_evaluation(
+    payload: EvaluationCreate,
+    db: Session = Depends(get_db)
+):
+    """Create a stubbed evaluation record."""
+    paper = db.query(Paper).filter(Paper.id == payload.paper_id).first()
+    if not paper:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Paper with id {payload.paper_id} not found"
+        )
+
+    rubric = db.query(Rubric).filter(Rubric.id == payload.rubric_id).first()
+    if not rubric:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Rubric with id {payload.rubric_id} not found"
+        )
+
+    prompt: Prompt
+    if payload.prompt_id is not None:
+        prompt = db.query(Prompt).filter(Prompt.id == payload.prompt_id).first()
+        if not prompt:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Prompt with id {payload.prompt_id} not found"
+            )
+    else:
+        prompt = _get_or_create_default_prompt(db)
+
+    model_response = payload.model_response or _build_stub_response(rubric)
+
+    evaluation = Evaluation(
+        paper_id=paper.id,
+        rubric_id=rubric.id,
+        prompt_id=prompt.id,
+        model_response=json.dumps(model_response),
+        is_correct=None,
+    )
+    db.add(evaluation)
+
+    # increment prompt stats
+    prompt.total_evaluations = (prompt.total_evaluations or 0) + 1
+
+    db.commit()
+    db.refresh(evaluation)
+    db.refresh(prompt)
+
+    # Return with parsed model_response
+    evaluation.model_response = model_response
+    return evaluation
+
+
+@router.get("/", response_model=List[EvaluationListItem])
+async def list_evaluations(
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db)
+):
+    """List evaluations (lightweight)."""
+    evaluations = db.query(Evaluation).offset(skip).limit(limit).all()
+    return evaluations
