@@ -21,7 +21,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 from app.core.database import get_db
-from app.models.database import Paper
+from app.models.database import Paper, Rubric
 from app.schemas.paper import PaperCreate, PaperUpdate, PaperResponse, PaperList
 
 # Create router for paper endpoints
@@ -35,6 +35,14 @@ async def create_paper(
     db: Session = Depends(get_db)
 ):
     """
+    # Validate rubric if provided
+    if paper.rubric_id is not None:
+        rubric = db.query(Rubric).filter(Rubric.id == paper.rubric_id).first()
+        if not rubric:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Rubric with id {paper.rubric_id} not found"
+            )
     Create a new paper.
 
     **Request Body:**
@@ -58,7 +66,8 @@ async def create_paper(
     # Create new Paper instance from request data
     db_paper = Paper(
         title=paper.title,
-        content=paper.content
+        content=paper.content,
+        rubric_id=paper.rubric_id
         # submission_date and created_at are set automatically by database defaults
     )
 
@@ -109,6 +118,8 @@ async def list_papers(
         paper_dict = {
             "id": paper.id,
             "title": paper.title,
+            "rubric_id": paper.rubric_id,
+            "rubric_name": paper.rubric_name,
             "content_preview": paper.content[:150] + "..." if len(paper.content) > 150 else paper.content,
             "submission_date": paper.submission_date
         }
@@ -194,6 +205,17 @@ async def update_paper(
     # Update only provided fields
     # Tech Tip: exclude_unset=True ignores fields not in request
     update_data = paper_update.model_dump(exclude_unset=True)
+
+    if "rubric_id" in update_data:
+        rubric_id = update_data.pop("rubric_id")
+        if rubric_id is not None:
+            rubric = db.query(Rubric).filter(Rubric.id == rubric_id).first()
+            if not rubric:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Rubric with id {rubric_id} not found"
+                )
+        paper.rubric_id = rubric_id
 
     for field, value in update_data.items():
         setattr(paper, field, value)

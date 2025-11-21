@@ -55,6 +55,7 @@ export default function PapersList() {
   };
 
   const formatDate = (dateString: string) => {
+    if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
@@ -127,9 +128,21 @@ export default function PapersList() {
                 <h3 className="text-lg font-semibold text-gray-800 mb-1">
                   {paper.title}
                 </h3>
-                <p className="text-sm text-gray-500 mb-2">
-                  Created: {formatDate(paper.created_at)}
-                </p>
+                <div className="flex items-center gap-2 text-sm text-gray-500 mb-2 flex-wrap">
+                  <span>Created: {formatDate(paper.created_at)}</span>
+                  {paper.submission_date && (
+                    <span className="text-gray-400">•</span>
+                  )}
+                  {paper.submission_date && (
+                    <span>Submitted: {formatDate(paper.submission_date)}</span>
+                  )}
+                  {paper.rubric_name && (
+                    <>
+                      <span className="text-gray-400">•</span>
+                      <span className="text-blue-700 font-medium">Rubric: {paper.rubric_name}</span>
+                    </>
+                  )}
+                </div>
                 <p className="text-gray-600 line-clamp-2">
                   {paper.content.substring(0, 200)}
                   {paper.content.length > 200 && '...'}
@@ -173,7 +186,10 @@ export default function PapersList() {
 
             <div className="mb-4 text-sm text-gray-500 space-y-1">
               <p>Created: {formatDate(selectedPaper.created_at)}</p>
-              <p>Updated: {formatDate(selectedPaper.updated_at)}</p>
+              <p>Submitted: {formatDate(selectedPaper.submission_date)}</p>
+              {selectedPaper.rubric_name && (
+                <p>Rubric: {selectedPaper.rubric_name}</p>
+              )}
               <p>ID: {selectedPaper.id}</p>
             </div>
 

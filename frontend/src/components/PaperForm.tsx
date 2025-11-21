@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { paperApi } from '../services/api';
-import type { PaperCreate } from '../services/api';
+import { useEffect, useState } from 'react';
+import { paperApi, rubricApi } from '../services/api';
+import type { PaperCreate, Rubric } from '../services/api';
 
 interface PaperFormProps {
   onSuccess?: () => void;
@@ -9,9 +9,28 @@ interface PaperFormProps {
 export default function PaperForm({ onSuccess }: PaperFormProps) {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [rubricId, setRubricId] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [rubrics, setRubrics] = useState<Rubric[]>([]);
+  const [rubricsError, setRubricsError] = useState('');
+  const [rubricsLoading, setRubricsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadRubrics = async () => {
+      try {
+        const data = await rubricApi.list();
+        setRubrics(data);
+      } catch (err) {
+        setRubricsError(err instanceof Error ? err.message : 'Failed to load rubrics');
+      } finally {
+        setRubricsLoading(false);
+      }
+    };
+
+    loadRubrics();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,6 +53,7 @@ export default function PaperForm({ onSuccess }: PaperFormProps) {
       const paperData: PaperCreate = {
         title: title.trim(),
         content: content.trim(),
+        rubric_id: rubricId ? Number(rubricId) : null,
       };
 
       await paperApi.create(paperData);
@@ -42,6 +62,7 @@ export default function PaperForm({ onSuccess }: PaperFormProps) {
       setSuccess(true);
       setTitle('');
       setContent('');
+      setRubricId('');
 
       // Call the success callback if provided
       if (onSuccess) {
@@ -76,6 +97,33 @@ export default function PaperForm({ onSuccess }: PaperFormProps) {
             placeholder="Enter paper title..."
             disabled={loading}
           />
+        </div>
+
+        {/* Rubric Selector */}
+        <div>
+          <label htmlFor="rubric" className="block text-sm font-medium text-gray-700 mb-1">
+            Rubric (optional)
+          </label>
+          <select
+            id="rubric"
+            value={rubricId}
+            onChange={(e) => setRubricId(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            disabled={loading || rubricsLoading || !!rubricsError}
+          >
+            <option value="">No rubric selected</option>
+            {rubrics.map((rubric) => (
+              <option key={rubric.id} value={rubric.id}>
+                {rubric.name}
+              </option>
+            ))}
+          </select>
+          {rubricsLoading && (
+            <p className="text-sm text-gray-500 mt-1">Loading rubrics...</p>
+          )}
+          {rubricsError && (
+            <p className="text-sm text-red-600 mt-1">Unable to load rubrics: {rubricsError}</p>
+          )}
         </div>
 
         {/* Content Textarea */}

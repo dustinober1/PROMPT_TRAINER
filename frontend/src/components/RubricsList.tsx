@@ -205,7 +205,6 @@ export default function RubricsList() {
 
             <div className="mb-4 text-sm text-gray-500 space-y-1">
               <p>Created: {formatDate(selectedRubric.created_at)}</p>
-              <p>Updated: {formatDate(selectedRubric.updated_at)}</p>
               <p>ID: {selectedRubric.id}</p>
             </div>
 
