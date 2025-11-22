@@ -89,6 +89,20 @@ def test_paper_crud_flow():
     assert list_after.json() == []
 
 
+def test_paper_creation_rejects_missing_rubric():
+    client = TestClient(app)
+    resp = client.post(
+        "/api/papers/",
+        json={
+            "title": "Paper with missing rubric",
+            "content": "Content goes here",
+            "rubric_id": 999,
+        },
+    )
+    assert resp.status_code == 404
+    assert "Rubric with id 999 not found" in resp.json()["detail"]
+
+
 def test_rubric_crud_and_criterion_guards():
     client = TestClient(app)
 
@@ -204,6 +218,10 @@ def test_evaluation_creation_stub():
     assert isinstance(evaluations[0]["model_response"], dict)
     assert evaluations[0]["paper_title"] == "Test Paper"
     assert evaluations[0]["rubric_name"] == "Essay Rubric"
+
+    # Prompt stats incremented
+    prompt_list = client.get("/api/evaluations/").json()
+    assert prompt_list[0]["prompt_id"] > 0
 
 
 def test_evaluation_creation_validates_rubric_and_paper():

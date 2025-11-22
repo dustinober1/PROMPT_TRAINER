@@ -35,14 +35,6 @@ async def create_paper(
     db: Session = Depends(get_db)
 ):
     """
-    # Validate rubric if provided
-    if paper.rubric_id is not None:
-        rubric = db.query(Rubric).filter(Rubric.id == paper.rubric_id).first()
-        if not rubric:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Rubric with id {paper.rubric_id} not found"
-            )
     Create a new paper.
 
     **Request Body:**
@@ -63,6 +55,15 @@ async def create_paper(
     Tech Tip: FastAPI automatically validates the request body
     against PaperCreate schema before this function runs.
     """
+    # Validate rubric if provided
+    if paper.rubric_id is not None:
+        rubric = db.query(Rubric).filter(Rubric.id == paper.rubric_id).first()
+        if not rubric:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Rubric with id {paper.rubric_id} not found"
+            )
+
     # Create new Paper instance from request data
     db_paper = Paper(
         title=paper.title,
