@@ -87,7 +87,7 @@ I'm a product manager with limited coding experience who's looking to learn to b
 - Evaluation responses now include paper/rubric names and the frontend shows titles instead of just IDs.
 
 ## Sprint 3 In-Progress
-- Progress tracked in `docs/sprint-3-progress.md` (focus: model integration, evaluation engine wiring, error handling).
+- Progress tracked in `docs/sprint-3-progress.md` (now marked complete for model integration, evaluation wiring, prompt stub, and feedback actions).
 - MI-001: Model abstraction layer implemented with `StubModelAdapter`; evaluation API now calls the adapter. Unit tests added for the adapter and end-to-end evaluation flow.
 - MI-002: Ollama adapter added (configurable via OLLAMA_ENABLED/OLLAMA_BASE_URL/OLLAMA_MODEL); adapter selection covered by tests.
 - MI-003: Adapter failures now return HTTP 502 from the evaluation API and are tested.
