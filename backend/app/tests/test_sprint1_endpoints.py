@@ -228,6 +228,8 @@ def test_evaluation_creation_stub():
     evaluations_payload = evaluations[0]["model_response"]
     scores = [entry["score"] for entry in evaluations_payload.get("evaluations", [])]
     assert all(score == "yes" for score in scores)
+    names = [entry["criterion_name"] for entry in evaluations_payload.get("evaluations", [])]
+    assert "Thesis" in names and "Grammar" in names
 
 
 def test_evaluation_creation_validates_rubric_and_paper():

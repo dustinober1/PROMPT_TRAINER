@@ -99,11 +99,27 @@ export default function EvaluationsList({ onToast }: Props) {
               </div>
               <span className="text-xs text-gray-500">{formatDate(ev.created_at)}</span>
             </div>
-            <div className="bg-gray-50 rounded-md p-3 text-sm text-gray-800 whitespace-pre-wrap">
-              {typeof ev.model_response === 'string'
-                ? ev.model_response
-                : JSON.stringify(ev.model_response, null, 2)}
-            </div>
+            {ev.model_response && Array.isArray(ev.model_response.evaluations) ? (
+              <div className="space-y-2">
+                {ev.model_response.evaluations.map((entry: any, idx: number) => (
+                  <div key={idx} className="bg-gray-50 rounded-md p-3 text-sm text-gray-800 border border-gray-100">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-semibold">{entry.criterion_name || `Criterion ${entry.criterion_id}`}</span>
+                      <span className="text-blue-700 font-medium">{entry.score}</span>
+                    </div>
+                    {entry.reasoning && (
+                      <p className="text-gray-600 text-sm">{entry.reasoning}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="bg-gray-50 rounded-md p-3 text-sm text-gray-800 whitespace-pre-wrap">
+                {typeof ev.model_response === 'string'
+                  ? ev.model_response
+                  : JSON.stringify(ev.model_response, null, 2)}
+              </div>
+            )}
           </div>
         ))}
       </div>

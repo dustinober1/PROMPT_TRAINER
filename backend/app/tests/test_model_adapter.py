@@ -1,7 +1,5 @@
 import pytest
 from app.services.model_adapter import StubModelAdapter
-import os
-import pytest
 
 
 def test_stub_adapter_returns_yes_scores():

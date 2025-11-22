@@ -13,12 +13,16 @@ type ActiveTab = 'papers' | 'rubrics' | 'evaluations';
 function App() {
   const [backendStatus, setBackendStatus] = useState<'checking' | 'connected' | 'error'>('checking')
   const [activeTab, setActiveTab] = useState<ActiveTab>('papers')
+  const [backendAdapter, setBackendAdapter] = useState<string | undefined>()
   const [toasts, setToasts] = useState<{ id: number; type: 'success' | 'error' | 'info'; message: string }[]>([])
 
   useEffect(() => {
     // Check backend health on mount
     healthApi.check()
-      .then(() => setBackendStatus('connected'))
+      .then((resp) => {
+        setBackendStatus('connected')
+        setBackendAdapter(resp.adapter)
+      })
       .catch(() => setBackendStatus('error'))
   }, [])
 
@@ -58,7 +62,12 @@ function App() {
               {backendStatus === 'error' && <span className="text-red-700 ml-2">✗ Disconnected</span>}
               {backendStatus === 'checking' && <span className="text-yellow-700 ml-2">⟳ Checking...</span>}
             </span>
-            <span className="text-xs text-gray-600">http://127.0.0.1:8000</span>
+            <div className="flex items-center gap-4 text-xs text-gray-600">
+              <span>http://127.0.0.1:8000</span>
+              {backendAdapter && (
+                <span className="text-gray-700">Adapter: {backendAdapter}</span>
+              )}
+            </div>
           </div>
 
           {/* Tab Navigation */}

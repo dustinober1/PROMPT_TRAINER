@@ -16,6 +16,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.database import init_db
+from app.core.config import get_settings
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -81,9 +82,11 @@ async def health_check():
 
     Future: Add database connection check, Ollama status, etc.
     """
+    settings = get_settings()
     return {
         "status": "healthy",
         "database": "connected",
+        "adapter": "ollama" if settings.ollama_enabled else "stub",
         "timestamp": datetime.now(timezone.utc).isoformat()
     }
 

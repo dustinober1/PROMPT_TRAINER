@@ -45,6 +45,7 @@ def _build_stub_response(rubric: Rubric) -> str:
     entries = [
         {
             "criterion_id": c.id,
+            "criterion_name": c.name,
             "score": "yes",
             "reasoning": "Stubbed evaluation response",
         }

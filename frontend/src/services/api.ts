@@ -228,5 +228,5 @@ export const healthApi = {
   /**
    * Check if backend is healthy
    */
-  check: () => apiFetch<{ status: string }>('/health'),
+  check: () => apiFetch<{ status: string; adapter?: string }>('/health'),
 };

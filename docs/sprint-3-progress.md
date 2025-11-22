@@ -13,8 +13,9 @@
 - `MI-001`: Model abstraction layer. ✅ StubModelAdapter implemented with interface + unit tests; evaluation endpoint now calls the adapter.
 - `MI-002`: Ollama local model integration. ✅ OllamaAdapter added (config via OLLAMA_ENABLED/OLLAMA_BASE_URL/OLLAMA_MODEL) with tests for adapter selection.
 - `PE-003`: Evaluation engine sends paper + rubric to model and stores structured response (via adapter).
-- `MI-003`: Basic error handling for model calls. ✅ Adapter failures propagate as HTTP 502 from the evaluation API and are covered by tests.
+- `MI-003`: Basic error handling for model calls. ✅ Adapter failures propagate as HTTP 502 from the evaluation API and are covered by tests; health exposes adapter name.
+- Stub evaluations now include per-criterion names/scores and are rendered in the Evaluations tab.
 
 ## Next Up
-- Expose provider selection config in settings (env) for easy switching in deployments.
-- Surface adapter/provider choice in docs and ENV samples.
+- Document provider selection config (env/settings) and add README snippet.
+- Consider a simple provider status badge in the UI header (currently shows adapter from /health).
