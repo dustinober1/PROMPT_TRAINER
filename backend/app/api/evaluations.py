@@ -15,7 +15,7 @@ from app.schemas.evaluation import (
     EvaluationCreate,
     EvaluationResponse,
 )
-from app.services.model_adapter import StubModelAdapter
+from app.services.model_adapter import get_adapter
 
 router = APIRouter()
 
@@ -84,8 +84,8 @@ async def create_evaluation(
     else:
         prompt = _get_or_create_default_prompt(db)
 
-    # Evaluate via adapter (stub for now)
-    adapter = StubModelAdapter()
+    # Evaluate via adapter (configurable; defaults to stub)
+    adapter = get_adapter()
     model_response = payload.model_response or adapter.evaluate(
         paper_content=paper.content,
         rubric={
