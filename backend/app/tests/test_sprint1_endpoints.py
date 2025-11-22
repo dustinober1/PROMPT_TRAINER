@@ -202,3 +202,27 @@ def test_evaluation_creation_stub():
     assert len(evaluations) == 1
     assert evaluations[0]["paper_id"] == paper_id
     assert isinstance(evaluations[0]["model_response"], dict)
+
+
+def test_evaluation_creation_validates_rubric_and_paper():
+    client = TestClient(app)
+
+    # Missing paper
+    missing_paper = client.post(
+        "/api/evaluations/",
+        json={"paper_id": 999, "rubric_id": 1},
+    )
+    assert missing_paper.status_code == 404
+
+    # Create a paper but no rubric
+    paper_resp = client.post(
+        "/api/papers/",
+        json={"title": "No Rubric Paper", "content": "Test content for validation."},
+    )
+    paper_id = paper_resp.json()["id"]
+
+    missing_rubric = client.post(
+        "/api/evaluations/",
+        json={"paper_id": paper_id, "rubric_id": 999},
+    )
+    assert missing_rubric.status_code == 404
