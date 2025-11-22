@@ -96,3 +96,25 @@ I'm a product manager with limited coding experience who's looking to learn to b
 - Adapter configuration is documented in README under “Adapter / Model Provider Configuration” (stub default, Ollama env vars).
 - Evaluations tab includes “Mark Correct/Incorrect” actions (updates evaluation.is_correct via API).
 - Prompt API added (create/list) with parent-based version increment for manual versioning.
+
+## Sprint 4 Complete (Results & Feedback)
+- Backend: Enriched evaluation responses with rubric criteria and feedback arrays; feedback endpoints for per-criterion and overall corrections with validation; default prompt includes required placeholders.
+- Frontend: Evaluations tab now has master-detail view with per-criterion results and inline feedback (correct/incorrect + corrected scores/notes) with toasts and optimistic refresh.
+- Tests: Expanded end-to-end coverage for evaluation/feedback flows.
+- Docs: Added `docs/sprint-4-plan.md` and `docs/sprint-4-progress.md`.
+
+## Sprint 5 Complete (Prompt management, accuracy, sanitization)
+- Prompt management: Update/activate prompt endpoints with required placeholders and single-active enforcement; new Prompts tab with version list, editor, activate/create flows.
+- Accuracy metric: `/api/metrics/accuracy` endpoint and UI badge showing % correct and counts.
+- Sanitization: Input guards for papers, rubrics/criteria, and prompts reject script tags and enforce length.
+- Responsive/UX: Navigation supports mobile; status bar includes adapter + accuracy; prompt UI mobile-friendly.
+- Tests: Added backend coverage for prompts, metrics, and sanitization; frontend lint/build passing. Docs added `docs/sprint-5-plan.md` and `docs/sprint-5-progress.md`.
+
+## Sprint 6 Complete (Advanced scoring types & enhanced feedback)
+- Backend: Three scoring types fully implemented (yes_no, meets_not_meets, numerical); Criterion model extended with min_score, max_score, description fields; comprehensive validation ensures numerical rubrics have valid ranges (min < max); feedback supports optional user_explanation field; all model adapters return appropriate scores per type.
+- Frontend: RubricForm shows conditional min/max inputs for numerical scoring with client-side validation; EvaluationsList displays formatted scores with colored badges ("X/Y points" for numerical, "Meets Standard" for meets_not_meets); feedback form has type-specific inputs (dropdowns for yes_no/meets_not_meets, number input for numerical) with explanation textarea and character counter.
+- Tests: All 37 backend tests passing including 15 new Sprint 6 tests covering scoring type creation, validation, evaluation, and feedback flows; frontend builds successfully with TypeScript.
+- Docs: README updated with comprehensive "Rubric Scoring Types" section including use cases, examples, and best practices; `docs/sprint-6-plan.md` and `docs/sprint-6-progress.md` created.
+
+## Dev Workflow Helpers
+- Added `dev.sh` to start backend (uvicorn) and frontend (Vite) together; logs to `.dev-backend.log` / `.dev-frontend.log`. Requires `backend/venv` and `frontend/node_modules` preinstalled.

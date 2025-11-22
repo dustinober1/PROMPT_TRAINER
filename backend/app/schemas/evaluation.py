@@ -6,12 +6,19 @@ from pydantic import BaseModel, Field
 
 
 class RubricCriterionSummary(BaseModel):
-    """Lightweight rubric criterion used in evaluation payloads."""
+    """
+    Lightweight rubric criterion used in evaluation payloads.
+
+    Tech Tip: Includes min/max scores for numerical rubrics (Sprint 6).
+    These fields are None for yes/no and meets/not-meets rubrics.
+    """
     id: int
     rubric_id: int
     name: str
     description: Optional[str] = None
     order: int
+    min_score: Optional[int] = None
+    max_score: Optional[int] = None
 
     model_config = {"from_attributes": True}
 

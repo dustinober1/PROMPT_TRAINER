@@ -214,7 +214,7 @@ export const evaluationApi = {
 // Rubric API
 // ============================================================================
 
-export type ScoringType = 'yes_no' | 'meets' | 'numerical';
+export type ScoringType = 'yes_no' | 'meets_not_meets' | 'numerical';
 
 export interface Criterion {
   id: number;
@@ -222,12 +222,16 @@ export interface Criterion {
   name: string;
   description?: string;
   order: number;
+  min_score?: number | null;
+  max_score?: number | null;
 }
 
 export interface CriterionCreate {
   name: string;
   description?: string;
   order: number;
+  min_score?: number | null;
+  max_score?: number | null;
 }
 
 export interface Rubric {

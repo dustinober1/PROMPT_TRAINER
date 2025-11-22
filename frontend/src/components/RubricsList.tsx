@@ -65,13 +65,13 @@ export default function RubricsList() {
 
   const scoringTypeLabels: Record<ScoringType, string> = {
     yes_no: 'Yes/No',
-    meets: 'Meets/Not Meets',
+    meets_not_meets: 'Meets/Not Meets',
     numerical: 'Numerical',
   };
 
   const scoringTypeBadgeColors: Record<ScoringType, string> = {
     yes_no: 'bg-blue-100 text-blue-800',
-    meets: 'bg-green-100 text-green-800',
+    meets_not_meets: 'bg-green-100 text-green-800',
     numerical: 'bg-purple-100 text-purple-800',
   };
 

@@ -20,21 +20,40 @@ class ModelAdapter(ABC):
 
 
 class StubModelAdapter(ModelAdapter):
-    """Stub adapter that returns a deterministic response."""
+    """
+    Stub adapter that returns deterministic responses based on scoring type.
+
+    Tech Tip: This adapter is useful for development and testing without
+    needing a real model. It generates realistic-looking responses for each scoring type.
+    """
 
     def evaluate(self, paper_content: str, rubric: Dict[str, Any]) -> Dict[str, Any]:
         criteria = rubric.get("criteria", [])
-        return {
-            "evaluations": [
-                {
-                    "criterion_id": c.get("id"),
-                    "criterion_name": c.get("name"),
-                    "score": "yes",
-                    "reasoning": "Stubbed evaluation",
-                }
-                for c in criteria
-            ]
-        }
+        scoring_type = rubric.get("scoring_type", "yes_no")
+
+        evaluations = []
+        for c in criteria:
+            # Generate appropriate score based on scoring type
+            if scoring_type == "yes_no":
+                score = "yes"
+            elif scoring_type == "meets_not_meets":
+                score = "meets"
+            elif scoring_type == "numerical":
+                # Return a score in the middle of the range
+                min_score = c.get("min_score", 0)
+                max_score = c.get("max_score", 10)
+                score = (min_score + max_score) // 2
+            else:
+                score = "yes"  # fallback
+
+            evaluations.append({
+                "criterion_id": c.get("id"),
+                "criterion_name": c.get("name"),
+                "score": score,
+                "reasoning": f"Stubbed evaluation for {scoring_type} scoring",
+            })
+
+        return {"evaluations": evaluations}
 
 
 class OllamaAdapter(ModelAdapter):
@@ -64,16 +83,49 @@ class OllamaAdapter(ModelAdapter):
             raise RuntimeError(f"Ollama request failed: {exc}") from exc
 
     def _build_prompt(self, paper_content: str, rubric: Dict[str, Any]) -> str:
-        criteria_lines = "\n".join(
-            f"- {c.get('name', 'Criterion')} (id {c.get('id')})" for c in rubric.get("criteria", [])
-        )
+        """
+        Build evaluation prompt with detailed criterion information.
+
+        Tech Tip: The prompt includes scoring type instructions so the model
+        knows what format to return (yes/no, meets/not-meets, or numerical).
+        """
+        scoring_type = rubric.get("scoring_type", "yes_no")
+        criteria_details = []
+
+        for c in rubric.get("criteria", []):
+            criterion_text = f"- {c.get('name', 'Criterion')} (id {c.get('id')})"
+
+            # Add description if available
+            description = c.get("description")
+            if description:
+                criterion_text += f"\n  Description: {description}"
+
+            # Add scoring instructions based on type
+            if scoring_type == "yes_no":
+                criterion_text += "\n  Scoring: Respond with 'yes' or 'no'"
+            elif scoring_type == "meets_not_meets":
+                criterion_text += "\n  Scoring: Respond with 'meets' or 'does_not_meet'"
+            elif scoring_type == "numerical":
+                min_score = c.get("min_score", 0)
+                max_score = c.get("max_score", 10)
+                criterion_text += f"\n  Scoring: Provide a numerical score from {min_score} to {max_score}"
+
+            criteria_details.append(criterion_text)
+
+        criteria_text = "\n\n".join(criteria_details)
+
         return (
-            "You are an evaluator. Given the rubric criteria, provide a judgment.\n"
+            "You are an educational evaluator. Evaluate the paper against each criterion.\n"
             f"Rubric: {rubric.get('name', 'Unnamed')}\n"
-            f"Criteria:\n{criteria_lines}\n\n"
+            f"Scoring Type: {scoring_type}\n\n"
+            "Criteria:\n"
+            f"{criteria_text}\n\n"
             "Paper:\n"
             f"{paper_content}\n\n"
-            "Return a concise evaluation."
+            "For each criterion, provide:\n"
+            "1. Your score (following the scoring type specified)\n"
+            "2. Brief reasoning for your decision\n\n"
+            "Format your response clearly with criterion IDs."
         )
 
 

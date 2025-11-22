@@ -45,8 +45,9 @@ async def create_rubric(
     **Request Body:**
     - name: Rubric name
     - description: Optional description
-    - scoring_type: "yes_no", "meets", or "numerical"
+    - scoring_type: "yes_no", "meets_not_meets", or "numerical"
     - criteria: List of criteria (at least 1)
+      - For numerical rubrics, each criterion must have min_score and max_score
 
     **Returns:**
     - Complete rubric with all criteria and generated IDs
@@ -67,6 +68,16 @@ async def create_rubric(
     Tech Tip: This creates the rubric AND all criteria in ONE database transaction.
     If anything fails, everything is rolled back (all-or-nothing).
     """
+    # Validate numerical scoring requirements
+    # Tech Tip: This ensures numerical rubrics have min/max scores before we touch the database
+    try:
+        rubric.validate_numerical_scoring()
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail=str(e)
+        )
+
     # Create rubric instance
     db_rubric = Rubric(
         name=sanitize_text(rubric.name, "Rubric name", min_length=1, max_length=255),
@@ -90,7 +101,9 @@ async def create_rubric(
             description=sanitize_text(criterion_data.description, "Criterion description", min_length=0, max_length=2000)
             if criterion_data.description is not None
             else None,
-            order=criterion_data.order
+            order=criterion_data.order,
+            min_score=criterion_data.min_score,
+            max_score=criterion_data.max_score
         )
         db.add(db_criterion)
 

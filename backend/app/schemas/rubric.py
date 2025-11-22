@@ -23,19 +23,30 @@ class ScoringType(str, Enum):
 
     Tech Tip: Using an Enum ensures only valid values are accepted.
     FastAPI will reject any other values automatically.
+
+    - YES_NO: Simple binary scoring (yes/no)
+    - MEETS_NOT_MEETS: Standards-based grading (meets standard or does not meet)
+    - NUMERICAL: Point-based scoring with min/max range (e.g., 0-10 points)
     """
     YES_NO = "yes_no"
-    MEETS = "meets"
+    MEETS_NOT_MEETS = "meets_not_meets"
     NUMERICAL = "numerical"
 
 
 # ==================== CRITERION SCHEMAS ====================
 
 class CriterionBase(BaseModel):
-    """Base criterion fields (shared across schemas)"""
+    """
+    Base criterion fields (shared across schemas).
+
+    Tech Tip: Criteria can have optional min/max scores for numerical rubrics.
+    When the parent rubric uses numerical scoring, these fields become required.
+    """
     name: str = Field(..., min_length=1, max_length=255, description="Criterion name")
-    description: Optional[str] = Field(None, description="Detailed description of what to evaluate")
+    description: Optional[str] = Field(None, max_length=2000, description="Detailed description of what to evaluate")
     order: int = Field(0, ge=0, description="Display order (0-based)")
+    min_score: Optional[int] = Field(None, description="Minimum score for numerical rubrics")
+    max_score: Optional[int] = Field(None, description="Maximum score for numerical rubrics")
 
     @field_validator('name')
     @classmethod
@@ -44,6 +55,24 @@ class CriterionBase(BaseModel):
         if not v.strip():
             raise ValueError('Criterion name cannot be empty or only whitespace')
         return v.strip()
+
+    @field_validator('description')
+    @classmethod
+    def sanitize_description(cls, v: Optional[str]) -> Optional[str]:
+        """
+        Sanitize description field.
+
+        Tech Tip: This prevents XSS attacks by rejecting script tags.
+        Sprint 5 added this security layer across all text inputs.
+        """
+        if v is None:
+            return None
+        # Reject script tags
+        if '<script' in v.lower() or '</script>' in v.lower():
+            raise ValueError('Description cannot contain script tags')
+        # Strip excess whitespace
+        v = v.strip()
+        return v if v else None
 
 
 class CriterionCreate(CriterionBase):
@@ -62,8 +91,10 @@ class CriterionUpdate(BaseModel):
     All fields are optional for partial updates.
     """
     name: Optional[str] = Field(None, min_length=1, max_length=255)
-    description: Optional[str] = None
+    description: Optional[str] = Field(None, max_length=2000)
     order: Optional[int] = Field(None, ge=0)
+    min_score: Optional[int] = None
+    max_score: Optional[int] = None
 
     @field_validator('name')
     @classmethod
@@ -72,11 +103,25 @@ class CriterionUpdate(BaseModel):
             raise ValueError('Criterion name cannot be empty')
         return v.strip() if v else None
 
+    @field_validator('description')
+    @classmethod
+    def sanitize_description(cls, v: Optional[str]) -> Optional[str]:
+        """Sanitize description field"""
+        if v is None:
+            return None
+        if '<script' in v.lower() or '</script>' in v.lower():
+            raise ValueError('Description cannot contain script tags')
+        v = v.strip()
+        return v if v else None
+
 
 class CriterionResponse(CriterionBase):
     """
     Complete criterion data returned by API.
     Includes the database-generated ID.
+
+    Tech Tip: This inherits all fields from CriterionBase (name, description, order, min_score, max_score)
+    and adds the database fields (id, rubric_id).
     """
     id: int
     rubric_id: int
@@ -137,6 +182,28 @@ class RubricCreate(RubricBase):
             for i, criterion in enumerate(v):
                 criterion.order = i
         return v
+
+    def validate_numerical_scoring(self):
+        """
+        Validate that numerical rubrics have proper min/max scores.
+
+        Tech Tip: This is called after the model is created, not as a @field_validator,
+        because we need to check scoring_type against criteria fields.
+        """
+        if self.scoring_type == ScoringType.NUMERICAL:
+            for i, criterion in enumerate(self.criteria):
+                # Check that min_score and max_score are provided
+                if criterion.min_score is None:
+                    raise ValueError(f'Criterion "{criterion.name}" requires min_score for numerical rubrics')
+                if criterion.max_score is None:
+                    raise ValueError(f'Criterion "{criterion.name}" requires max_score for numerical rubrics')
+
+                # Check that min < max
+                if criterion.min_score >= criterion.max_score:
+                    raise ValueError(
+                        f'Criterion "{criterion.name}": min_score ({criterion.min_score}) '
+                        f'must be less than max_score ({criterion.max_score})'
+                    )
 
     model_config = {
         "json_schema_extra": {

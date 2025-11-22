@@ -237,6 +237,42 @@ export default function EvaluationsList({ onToast }: Props) {
 
   const scoringType = selectedEvaluation?.rubric_scoring_type || 'yes_no';
 
+  // Format score display based on scoring type
+  const formatScore = (score: string | number, criterion?: Criterion): string => {
+    if (!score && score !== 0) return 'n/a';
+
+    if (scoringType === 'yes_no') {
+      return String(score).toLowerCase() === 'yes' ? 'Yes' : 'No';
+    } else if (scoringType === 'meets_not_meets') {
+      return String(score).toLowerCase() === 'meets' ? 'Meets Standard' : 'Does Not Meet';
+    } else if (scoringType === 'numerical' && criterion) {
+      return `${score} / ${criterion.max_score || '?'} points`;
+    }
+    return String(score);
+  };
+
+  // Get score badge color based on scoring type and value
+  const getScoreBadgeClass = (score: string | number): string => {
+    if (!score && score !== 0) return 'bg-gray-100 text-gray-700';
+
+    if (scoringType === 'yes_no') {
+      return String(score).toLowerCase() === 'yes'
+        ? 'bg-green-100 text-green-800'
+        : 'bg-red-100 text-red-800';
+    } else if (scoringType === 'meets_not_meets') {
+      return String(score).toLowerCase() === 'meets'
+        ? 'bg-green-100 text-green-800'
+        : 'bg-red-100 text-red-800';
+    } else if (scoringType === 'numerical') {
+      // For numerical, use green for high scores, yellow for mid, red for low
+      const numScore = Number(score);
+      if (numScore >= 7) return 'bg-green-100 text-green-800';
+      if (numScore >= 4) return 'bg-yellow-100 text-yellow-800';
+      return 'bg-red-100 text-red-800';
+    }
+    return 'bg-blue-100 text-blue-800';
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -329,10 +365,17 @@ export default function EvaluationsList({ onToast }: Props) {
                     <div key={criterion.id} className="border border-gray-200 rounded-md p-3 bg-gray-50">
                       <div className="flex items-center justify-between">
                         <span className="font-semibold text-gray-800">{criterion.name}</span>
-                        <span className="text-blue-700 font-medium text-sm">{modelScore || 'n/a'}</span>
+                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getScoreBadgeClass(modelScore)}`}>
+                          {formatScore(modelScore, criterion)}
+                        </span>
                       </div>
                       {criterion.description && (
                         <p className="text-xs text-gray-600 mt-1">{criterion.description}</p>
+                      )}
+                      {scoringType === 'numerical' && criterion.min_score !== undefined && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          Range: {criterion.min_score} - {criterion.max_score} points
+                        </p>
                       )}
                       {reasoning && (
                         <p className="text-sm text-gray-700 mt-2">Reasoning: {reasoning}</p>
@@ -358,7 +401,11 @@ export default function EvaluationsList({ onToast }: Props) {
                       <div className="flex items-center justify-between mb-1">
                         <div>
                           <p className="text-sm font-semibold text-gray-800">{criterion.name}</p>
-                          <p className="text-xs text-gray-500">Model score: {modelScore || 'n/a'}</p>
+                          <p className="text-xs text-gray-500">
+                            Model score: <span className={`font-semibold ${getScoreBadgeClass(modelScore)}`}>
+                              {formatScore(modelScore, criterion)}
+                            </span>
+                          </p>
                         </div>
                         {saved && (
                           <span className="text-xs text-green-700 bg-green-50 border border-green-200 px-2 py-1 rounded">
@@ -367,6 +414,7 @@ export default function EvaluationsList({ onToast }: Props) {
                         )}
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {/* Corrected Score Input - varies by scoring type */}
                         {scoringType === 'yes_no' ? (
                           <div>
                             <label className="text-xs font-medium text-gray-700">Corrected score</label>
@@ -380,27 +428,57 @@ export default function EvaluationsList({ onToast }: Props) {
                               <option value="no">No</option>
                             </select>
                           </div>
-                        ) : (
+                        ) : scoringType === 'meets_not_meets' ? (
                           <div>
-                            <label className="text-xs font-medium text-gray-700">Corrected value</label>
-                            <input
+                            <label className="text-xs font-medium text-gray-700">Corrected score</label>
+                            <select
                               value={draft.corrected}
                               onChange={(e) => handleDraftChange(criterion.id, 'corrected', e.target.value)}
                               className="mt-1 w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 text-sm"
-                              placeholder="Enter corrected score/value"
+                            >
+                              <option value="">Select</option>
+                              <option value="meets">Meets Standard</option>
+                              <option value="does_not_meet">Does Not Meet</option>
+                            </select>
+                          </div>
+                        ) : (
+                          <div>
+                            <label className="text-xs font-medium text-gray-700">
+                              Corrected score
+                              {criterion.min_score !== undefined && (
+                                <span className="text-gray-500 ml-1">
+                                  ({criterion.min_score}-{criterion.max_score})
+                                </span>
+                              )}
+                            </label>
+                            <input
+                              type="number"
+                              value={draft.corrected}
+                              onChange={(e) => handleDraftChange(criterion.id, 'corrected', e.target.value)}
+                              className="mt-1 w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 text-sm"
+                              placeholder={`Enter score (${criterion.min_score}-${criterion.max_score})`}
+                              min={criterion.min_score ?? undefined}
+                              max={criterion.max_score ?? undefined}
                             />
                           </div>
                         )}
 
+                        {/* Explanation textarea with character counter */}
                         <div>
-                          <label className="text-xs font-medium text-gray-700">Optional note</label>
+                          <label className="text-xs font-medium text-gray-700">
+                            Explanation (optional)
+                          </label>
                           <textarea
                             value={draft.note}
                             onChange={(e) => handleDraftChange(criterion.id, 'note', e.target.value)}
                             rows={2}
-                            className="mt-1 w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 text-sm"
+                            maxLength={1000}
+                            className="mt-1 w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 text-sm resize-none"
                             placeholder="Explain why the model was wrong (optional)"
                           />
+                          <div className="text-xs text-gray-500 mt-1 text-right">
+                            {draft.note.length}/1000 characters
+                          </div>
                         </div>
                       </div>
                       <div className="mt-3 flex items-center gap-3">
@@ -412,10 +490,14 @@ export default function EvaluationsList({ onToast }: Props) {
                           {isSaving ? 'Saving...' : saved ? 'Update Feedback' : 'Save Feedback'}
                         </button>
                         {saved && (
-                          <p className="text-xs text-gray-600">
-                            Corrected to: <span className="font-semibold">{saved.user_corrected_score}</span>
-                            {saved.user_explanation ? ` • ${saved.user_explanation}` : ''}
-                          </p>
+                          <div className="text-xs text-gray-600">
+                            <p>
+                              Corrected to: <span className="font-semibold">{formatScore(saved.user_corrected_score, criterion)}</span>
+                            </p>
+                            {saved.user_explanation && (
+                              <p className="text-gray-500 mt-1 italic">"{saved.user_explanation}"</p>
+                            )}
+                          </div>
                         )}
                       </div>
                     </div>

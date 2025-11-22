@@ -93,6 +93,8 @@ def _serialize_evaluation(evaluation: Evaluation, include_feedback: bool = True)
                 "name": c.name,
                 "description": c.description,
                 "order": c.order,
+                "min_score": c.min_score,
+                "max_score": c.max_score,
             }
             for c in sorted(rubric.criteria, key=lambda c: c.order)
         ]
@@ -113,8 +115,15 @@ def _serialize_evaluation(evaluation: Evaluation, include_feedback: bool = True)
     }
 
 
-def _validate_corrected_score(rubric: Rubric, corrected_score: str):
-    """Ensure corrected score fits rubric scoring type (currently yes/no support)."""
+def _validate_corrected_score(rubric: Rubric, corrected_score: str, criterion: Optional[Criterion] = None):
+    """
+    Ensure corrected score fits rubric scoring type.
+
+    Tech Tip: Different scoring types require different validation:
+    - yes_no: Must be 'yes' or 'no'
+    - meets_not_meets: Must be 'meets' or 'does_not_meet'
+    - numerical: Must be an integer within criterion's min/max range
+    """
     if rubric.scoring_type == "yes_no":
         normalized = corrected_score.strip().lower()
         if normalized not in {"yes", "no"}:
@@ -123,6 +132,40 @@ def _validate_corrected_score(rubric: Rubric, corrected_score: str):
                 detail="For yes/no rubrics, corrected score must be 'yes' or 'no'.",
             )
         return normalized
+
+    elif rubric.scoring_type == "meets_not_meets":
+        normalized = corrected_score.strip().lower()
+        if normalized not in {"meets", "does_not_meet"}:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+                detail="For meets/not-meets rubrics, corrected score must be 'meets' or 'does_not_meet'.",
+            )
+        return normalized
+
+    elif rubric.scoring_type == "numerical":
+        try:
+            score = int(corrected_score.strip())
+        except ValueError:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+                detail="For numerical rubrics, corrected score must be an integer.",
+            )
+
+        # Validate against criterion's range if criterion is provided
+        if criterion:
+            if criterion.min_score is not None and score < criterion.min_score:
+                raise HTTPException(
+                    status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+                    detail=f"Score {score} is below minimum {criterion.min_score}.",
+                )
+            if criterion.max_score is not None and score > criterion.max_score:
+                raise HTTPException(
+                    status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+                    detail=f"Score {score} is above maximum {criterion.max_score}.",
+                )
+
+        return str(score)  # Return as string to maintain consistency
+
     return corrected_score.strip()
 
 
@@ -158,6 +201,7 @@ async def create_evaluation(
         prompt = _get_or_create_default_prompt(db)
 
     # Evaluate via adapter (configurable; defaults to stub)
+    # Tech Tip: Pass complete rubric data including scoring_type and criterion details
     adapter = get_adapter()
     try:
         model_response = payload.model_response or adapter.evaluate(
@@ -165,7 +209,17 @@ async def create_evaluation(
             rubric={
                 "id": rubric.id,
                 "name": rubric.name,
-                "criteria": [{"id": c.id, "name": c.name} for c in rubric.criteria],
+                "scoring_type": rubric.scoring_type,
+                "criteria": [
+                    {
+                        "id": c.id,
+                        "name": c.name,
+                        "description": c.description,
+                        "min_score": c.min_score,
+                        "max_score": c.max_score,
+                    }
+                    for c in rubric.criteria
+                ],
             },
         )
     except RuntimeError as exc:
@@ -254,7 +308,7 @@ async def create_or_update_feedback(
                 detail="Criterion does not belong to evaluation rubric",
             )
 
-    corrected_score = _validate_corrected_score(rubric, payload.user_corrected_score)
+    corrected_score = _validate_corrected_score(rubric, payload.user_corrected_score, criterion)
     existing = (
         db.query(FeedbackEntry)
         .filter(

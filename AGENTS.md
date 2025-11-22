@@ -110,5 +110,11 @@ I'm a product manager with limited coding experience who's looking to learn to b
 - Responsive/UX: Navigation supports mobile; status bar includes adapter + accuracy; prompt UI mobile-friendly.
 - Tests: Added backend coverage for prompts, metrics, and sanitization; frontend lint/build passing. Docs added `docs/sprint-5-plan.md` and `docs/sprint-5-progress.md`.
 
+## Sprint 6 Complete (Advanced scoring types & enhanced feedback)
+- Backend: Three scoring types fully implemented (yes_no, meets_not_meets, numerical); Criterion model extended with min_score, max_score, description fields; comprehensive validation ensures numerical rubrics have valid ranges (min < max); feedback supports optional user_explanation field; all model adapters return appropriate scores per type.
+- Frontend: RubricForm shows conditional min/max inputs for numerical scoring with client-side validation; EvaluationsList displays formatted scores with colored badges ("X/Y points" for numerical, "Meets Standard" for meets_not_meets); feedback form has type-specific inputs (dropdowns for yes_no/meets_not_meets, number input for numerical) with explanation textarea and character counter.
+- Tests: All 37 backend tests passing including 15 new Sprint 6 tests covering scoring type creation, validation, evaluation, and feedback flows; frontend builds successfully with TypeScript.
+- Docs: README updated with comprehensive "Rubric Scoring Types" section including use cases, examples, and best practices; `docs/sprint-6-plan.md` and `docs/sprint-6-progress.md` created.
+
 ## Dev Workflow Helpers
 - Added `dev.sh` to start backend (uvicorn) and frontend (Vite) together; logs to `.dev-backend.log` / `.dev-frontend.log`. Requires `backend/venv` and `frontend/node_modules` preinstalled.

@@ -71,7 +71,7 @@ class Rubric(Base):
     description = Column(Text, nullable=True)
 
     # Scoring type: how to score each criterion
-    # Options: "yes_no", "meets", "numerical"
+    # Options: "yes_no", "meets_not_meets", "numerical"
     scoring_type = Column(String(50), default="yes_no")
 
     created_at = Column(DateTime, default=utc_now)
@@ -94,6 +94,11 @@ class Criterion(Base):
     - "Has a clear thesis statement"
     - "Uses proper grammar and spelling"
     - "Provides supporting evidence"
+
+    Scoring Types:
+    - yes_no: Simple binary scoring
+    - meets_not_meets: Standards-based grading
+    - numerical: Point-based scoring (requires min_score and max_score)
     """
     __tablename__ = "criteria"
 
@@ -107,6 +112,11 @@ class Criterion(Base):
     name = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
     order = Column(Integer, default=0)  # For display ordering (1st, 2nd, 3rd...)
+
+    # Numerical scoring fields (only used when rubric.scoring_type = "numerical")
+    # Tech Tip: These are nullable because not all rubrics use numerical scoring
+    min_score = Column(Integer, nullable=True)
+    max_score = Column(Integer, nullable=True)
 
     # Relationship back to parent rubric
     rubric = relationship("Rubric", back_populates="criteria")

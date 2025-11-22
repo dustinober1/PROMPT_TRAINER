@@ -180,12 +180,121 @@ Refer to the MVP Development Plan for:
 - `PUT /api/rubrics/{id}/criteria/{criterion_id}` - Update criterion
 - `DELETE /api/rubrics/{id}/criteria/{criterion_id}` - Delete criterion
 
-**Scoring Types Supported:**
-- `yes_no` - Binary yes/no evaluation
-- `meets` - Meets/Does not meet expectations
-- `numerical` - Numeric scores (0-10)
-
 Visit `http://localhost:8000/docs` for interactive API testing!
+
+## Rubric Scoring Types
+
+Prompt Trainer supports three different scoring methodologies to match various grading needs:
+
+### 1. Yes/No (`yes_no`)
+**Use When**: You need simple binary evaluation.
+
+**Example Criteria**:
+- "Has a clear thesis statement"
+- "Includes at least 3 sources"
+- "Uses proper APA citation format"
+
+**How It Works**:
+- Model responds with "yes" or "no" for each criterion
+- Best for checklist-style evaluations
+- Simple and fast to review
+
+**Example Rubric**:
+```json
+{
+  "name": "Essay Checklist",
+  "scoring_type": "yes_no",
+  "criteria": [
+    {
+      "name": "Has thesis",
+      "description": "Paper includes a clear, arguable thesis statement",
+      "order": 0
+    }
+  ]
+}
+```
+
+### 2. Meets/Does Not Meet (`meets_not_meets`)
+**Use When**: Grading against educational standards or competency requirements.
+
+**Example Criteria**:
+- "Meets Common Core Writing Standard W.1"
+- "Demonstrates proficiency in statistical analysis"
+- "Fulfills lab safety requirements"
+
+**How It Works**:
+- Model responds with "meets" or "does_not_meet"
+- Ideal for standards-based grading
+- Aligns with competency-based education
+
+**Example Rubric**:
+```json
+{
+  "name": "Common Core Standards",
+  "scoring_type": "meets_not_meets",
+  "criteria": [
+    {
+      "name": "Writing Standard W.1",
+      "description": "Write arguments to support claims with clear reasons and relevant evidence",
+      "order": 0
+    }
+  ]
+}
+```
+
+### 3. Numerical (`numerical`)
+**Use When**: You need weighted scoring or point-based grading.
+
+**Example Criteria**:
+- "Thesis clarity: 0-5 points"
+- "Evidence quality: 0-10 points"
+- "Writing style: 0-100 points"
+
+**How It Works**:
+- Each criterion specifies a min and max score (e.g., 0-10)
+- Model returns a numerical score within that range
+- Useful for complex rubrics with different weights
+- **Required fields**: `min_score` and `max_score` for each criterion
+
+**Example Rubric**:
+```json
+{
+  "name": "Essay Grading Rubric",
+  "scoring_type": "numerical",
+  "criteria": [
+    {
+      "name": "Thesis Clarity",
+      "description": "Clear, specific, and arguable thesis statement",
+      "min_score": 0,
+      "max_score": 5,
+      "order": 0
+    },
+    {
+      "name": "Evidence Quality",
+      "description": "Strong peer-reviewed sources, properly cited",
+      "min_score": 0,
+      "max_score": 10,
+      "order": 1
+    }
+  ]
+}
+```
+
+### Tips for Writing Good Criterion Descriptions
+
+**Do**:
+- ✅ Be specific: "Includes at least 3 peer-reviewed sources published in the last 5 years"
+- ✅ Provide measurable criteria: "Thesis statement appears in the first paragraph and makes a clear argument"
+- ✅ Include context: "For a score of 8-10, paper must demonstrate exceptional understanding..."
+
+**Don't**:
+- ❌ Be vague: "Has good evidence"
+- ❌ Use subjective terms without definition: "Well-written"
+- ❌ Forget to explain scoring levels (for numerical rubrics)
+
+**Description Limits**:
+- Maximum 2000 characters per criterion description
+- Supports plain text only (no HTML/script tags)
 
 ---
 

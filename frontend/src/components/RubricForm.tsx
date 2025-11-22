@@ -64,6 +64,30 @@ export default function RubricForm({ onSuccess, onToast }: RubricFormProps) {
       return;
     }
 
+    // Validate numerical scoring criteria
+    if (scoringType === 'numerical') {
+      for (const criterion of criteria) {
+        if (criterion.min_score === undefined || criterion.min_score === null) {
+          const msg = `Criterion "${criterion.name}" requires a minimum score`;
+          setError(msg);
+          onToast?.('error', msg);
+          return;
+        }
+        if (criterion.max_score === undefined || criterion.max_score === null) {
+          const msg = `Criterion "${criterion.name}" requires a maximum score`;
+          setError(msg);
+          onToast?.('error', msg);
+          return;
+        }
+        if (criterion.min_score >= criterion.max_score) {
+          const msg = `Criterion "${criterion.name}": minimum score must be less than maximum score`;
+          setError(msg);
+          onToast?.('error', msg);
+          return;
+        }
+      }
+    }
+
     setLoading(true);
     setError('');
     setSuccess(false);
@@ -76,6 +100,8 @@ export default function RubricForm({ onSuccess, onToast }: RubricFormProps) {
           name: c.name.trim(),
           description: c.description?.trim() || undefined,
           order: index,
+          min_score: c.min_score ?? undefined,
+          max_score: c.max_score ?? undefined,
         })),
       };
 
@@ -106,14 +132,14 @@ export default function RubricForm({ onSuccess, onToast }: RubricFormProps) {
 
   const scoringTypeLabels: Record<ScoringType, string> = {
     yes_no: 'Yes / No',
-    meets: 'Meets / Does Not Meet',
+    meets_not_meets: 'Meets / Does Not Meet',
     numerical: 'Numerical Score',
   };
 
   const scoringTypeDescriptions: Record<ScoringType, string> = {
     yes_no: 'Binary evaluation (Yes or No)',
-    meets: 'Standards-based (Meets expectations or not)',
-    numerical: 'Numeric scores (e.g., 0-10)',
+    meets_not_meets: 'Standards-based (Meets expectations or not)',
+    numerical: 'Numeric scores with min/max range (e.g., 0-10)',
   };
 
   return (
@@ -205,14 +231,53 @@ export default function RubricForm({ onSuccess, onToast }: RubricFormProps) {
                     placeholder="Criterion name (required)"
                     disabled={loading}
                   />
-                  <textarea
-                    value={criterion.description || ''}
-                    onChange={(e) => updateCriterion(index, 'description', e.target.value)}
-                    rows={2}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none"
-                    placeholder="Description (optional)"
-                    disabled={loading}
-                  />
+
+                  <div>
+                    <textarea
+                      value={criterion.description || ''}
+                      onChange={(e) => updateCriterion(index, 'description', e.target.value)}
+                      rows={2}
+                      maxLength={2000}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none"
+                      placeholder="Description (optional)"
+                      disabled={loading}
+                    />
+                    <div className="text-xs text-gray-500 mt-1 text-right">
+                      {(criterion.description || '').length}/2000 characters
+                    </div>
+                  </div>
+
+                  {/* Min/Max Score inputs for numerical rubrics */}
+                  {scoringType === 'numerical' && (
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-xs text-gray-600 mb-1">
+                          Min Score <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="number"
+                          value={criterion.min_score ?? ''}
+                          onChange={(e) => updateCriterion(index, 'min_score', parseInt(e.target.value) || 0)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                          placeholder="0"
+                          disabled={loading}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-gray-600 mb-1">
+                          Max Score <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="number"
+                          value={criterion.max_score ?? ''}
+                          onChange={(e) => updateCriterion(index, 'max_score', parseInt(e.target.value) || 10)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                          placeholder="10"
+                          disabled={loading}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
