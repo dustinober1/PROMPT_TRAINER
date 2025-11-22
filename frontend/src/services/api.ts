@@ -101,7 +101,9 @@ export const paperApi = {
 export interface Evaluation {
   id: number;
   paper_id: number;
+  paper_title?: string | null;
   rubric_id: number;
+  rubric_name?: string | null;
   prompt_id: number;
   model_response: any;
   is_correct?: boolean | null;

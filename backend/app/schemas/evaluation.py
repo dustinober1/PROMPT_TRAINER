@@ -26,21 +26,12 @@ class EvaluationResponse(BaseModel):
     """Response payload for an evaluation"""
     id: int
     paper_id: int
+    paper_title: Optional[str] = None
     rubric_id: int
+    rubric_name: Optional[str] = None
     prompt_id: int
     model_response: Any
     is_correct: Optional[bool]
-    created_at: datetime
-
-    model_config = {"from_attributes": True}
-
-
-class EvaluationListItem(BaseModel):
-    """Lightweight evaluation listing"""
-    id: int
-    paper_id: int
-    rubric_id: int
-    prompt_id: int
     created_at: datetime
 
     model_config = {"from_attributes": True}

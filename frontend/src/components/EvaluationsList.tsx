@@ -93,7 +93,9 @@ export default function EvaluationsList({ onToast }: Props) {
             <div className="flex items-center justify-between mb-2">
               <div className="text-sm text-gray-600">
                 <span className="font-semibold text-gray-800">Eval #{ev.id}</span>{' '}
-                • Paper {ev.paper_id} • Rubric {ev.rubric_id} • Prompt {ev.prompt_id}
+                • Paper {ev.paper_title ? `${ev.paper_title} (ID ${ev.paper_id})` : ev.paper_id}{' '}
+                • Rubric {ev.rubric_name ? `${ev.rubric_name} (ID ${ev.rubric_id})` : ev.rubric_id}{' '}
+                • Prompt {ev.prompt_id}
               </div>
               <span className="text-xs text-gray-500">{formatDate(ev.created_at)}</span>
             </div>

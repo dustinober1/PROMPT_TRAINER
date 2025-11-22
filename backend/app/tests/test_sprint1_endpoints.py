@@ -202,6 +202,8 @@ def test_evaluation_creation_stub():
     assert len(evaluations) == 1
     assert evaluations[0]["paper_id"] == paper_id
     assert isinstance(evaluations[0]["model_response"], dict)
+    assert evaluations[0]["paper_title"] == "Test Paper"
+    assert evaluations[0]["rubric_name"] == "Essay Rubric"
 
 
 def test_evaluation_creation_validates_rubric_and_paper():

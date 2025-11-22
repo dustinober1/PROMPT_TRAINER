@@ -101,8 +101,10 @@ async def create_evaluation(
     db.refresh(evaluation)
     db.refresh(prompt)
 
-    # Return with parsed model_response
+    # Return with parsed model_response and names attached
     evaluation.model_response = model_response
+    evaluation.paper_title = paper.title
+    evaluation.rubric_name = rubric.name
     return evaluation
 
 
@@ -120,4 +122,6 @@ async def list_evaluations(
         except Exception:
             # leave as-is if parsing fails
             pass
+        ev.paper_title = ev.paper.title if ev.paper else None
+        ev.rubric_name = ev.rubric.name if ev.rubric else None
     return evaluations
