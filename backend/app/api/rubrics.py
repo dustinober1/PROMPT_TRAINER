@@ -103,7 +103,7 @@ async def create_rubric(
     return db_rubric
 
 
-@router.get("/", response_model=List[RubricList])
+@router.get("/", response_model=List[RubricResponse])
 async def list_rubrics(
     skip: int = 0,
     limit: int = 100,
@@ -124,21 +124,8 @@ async def list_rubrics(
     when you have many rubrics.
     """
     rubrics = db.query(Rubric).offset(skip).limit(limit).all()
-
-    # Transform to include criteria count
-    result = []
-    for rubric in rubrics:
-        rubric_dict = {
-            "id": rubric.id,
-            "name": rubric.name,
-            "description": rubric.description,
-            "scoring_type": rubric.scoring_type,
-            "created_at": rubric.created_at,
-            "criteria_count": len(rubric.criteria)
-        }
-        result.append(RubricList(**rubric_dict))
-
-    return result
+    # Return full criteria to keep frontend list rendering simple
+    return rubrics
 
 
 @router.get("/{rubric_id}", response_model=RubricResponse)
