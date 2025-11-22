@@ -1,0 +1,9 @@
+{
+  "scripts": {
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/mcp": "^0.0.48",
+    "@playwright/test": "^1.56.1"
+  }
+}
