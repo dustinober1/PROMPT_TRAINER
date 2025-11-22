@@ -15,6 +15,7 @@
 - Evaluations tab added to the frontend to list evaluation results (uses Evaluation API list endpoint).
 - Evaluations list auto-refreshes when a new evaluation is created (listens for `evaluationCreated` events).
 - Added negative-path backend tests for evaluation creation (404 on missing paper/rubric IDs) to harden validation.
+- Navigation is now bound to tab state (Papers/Rubrics/Evaluations) for consistent section switching.
 
 ## Testing
 - Backend: `cd backend && source venv/bin/activate && pytest` (passes; uses temp SQLite).

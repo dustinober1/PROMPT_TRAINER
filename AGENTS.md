@@ -83,3 +83,4 @@ I'm a product manager with limited coding experience who's looking to learn to b
 - Added an Evaluations tab to list evaluation results from the backend (via evaluationApi.list()).
 - Evaluation list auto-refreshes when a new evaluation is created (listens for `evaluationCreated` events from the Papers list).
 - Added negative tests for evaluation creation to ensure 404 responses for missing paper/rubric IDs.
+- Navigation is wired to tab state (Papers/Rubrics/Evaluations) so the header controls the active section.
