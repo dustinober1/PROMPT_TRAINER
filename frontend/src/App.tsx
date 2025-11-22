@@ -41,7 +41,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navigation />
+      <Navigation activeTab={activeTab} onChange={setActiveTab} />
 
       <main className="container mx-auto px-4 py-8">
         <ToastContainer toasts={toasts} onDismiss={dismissToast} />
