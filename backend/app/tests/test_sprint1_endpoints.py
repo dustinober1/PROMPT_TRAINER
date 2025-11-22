@@ -252,3 +252,46 @@ def test_evaluation_creation_validates_rubric_and_paper():
         json={"paper_id": paper_id, "rubric_id": 999},
     )
     assert missing_rubric.status_code == 404
+
+
+def test_evaluation_adapter_error(monkeypatch):
+    client = TestClient(app)
+
+    class FailingAdapter:
+        def evaluate(self, paper_content, rubric):
+            raise RuntimeError("Adapter failure")
+
+    # Patch adapter getter to return failing adapter
+    monkeypatch.setattr("app.api.evaluations.get_adapter", lambda: FailingAdapter())
+
+    # Seed rubric and paper
+    rubric_resp = client.post(
+        "/api/rubrics/",
+        json={
+            "name": "Essay Rubric",
+            "description": "Baseline rubric",
+            "scoring_type": "yes_no",
+            "criteria": [
+                {"name": "Thesis", "description": "Has thesis", "order": 0},
+                {"name": "Grammar", "description": "Good grammar", "order": 1},
+            ],
+        },
+    )
+    rubric_id = rubric_resp.json()["id"]
+
+    paper_resp = client.post(
+        "/api/papers/",
+        json={
+            "title": "Test Paper",
+            "content": "This is content for evaluation.",
+            "rubric_id": rubric_id,
+        },
+    )
+    paper_id = paper_resp.json()["id"]
+
+    eval_resp = client.post(
+        "/api/evaluations/",
+        json={"paper_id": paper_id, "rubric_id": rubric_id},
+    )
+    assert eval_resp.status_code == 502
+    assert "Adapter failure" in eval_resp.json()["detail"]

@@ -86,14 +86,20 @@ async def create_evaluation(
 
     # Evaluate via adapter (configurable; defaults to stub)
     adapter = get_adapter()
-    model_response = payload.model_response or adapter.evaluate(
-        paper_content=paper.content,
-        rubric={
-            "id": rubric.id,
-            "name": rubric.name,
-            "criteria": [{"id": c.id, "name": c.name} for c in rubric.criteria],
-        },
-    )
+    try:
+        model_response = payload.model_response or adapter.evaluate(
+            paper_content=paper.content,
+            rubric={
+                "id": rubric.id,
+                "name": rubric.name,
+                "criteria": [{"id": c.id, "name": c.name} for c in rubric.criteria],
+            },
+        )
+    except RuntimeError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=str(exc),
+        ) from exc
 
     evaluation = Evaluation(
         paper_id=paper.id,

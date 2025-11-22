@@ -13,8 +13,8 @@
 - `MI-001`: Model abstraction layer. ✅ StubModelAdapter implemented with interface + unit tests; evaluation endpoint now calls the adapter.
 - `MI-002`: Ollama local model integration. ✅ OllamaAdapter added (config via OLLAMA_ENABLED/OLLAMA_BASE_URL/OLLAMA_MODEL) with tests for adapter selection.
 - `PE-003`: Evaluation engine sends paper + rubric to model and stores structured response (via adapter).
-- `MI-003`: Basic error handling for model calls (partial; Ollama errors raise RuntimeError).
+- `MI-003`: Basic error handling for model calls. ✅ Adapter failures propagate as HTTP 502 from the evaluation API and are covered by tests.
 
 ## Next Up
-- Add error-handling paths/tests for adapter failures (MI-003) and surface clearer API errors.
 - Expose provider selection config in settings (env) for easy switching in deployments.
+- Surface adapter/provider choice in docs and ENV samples.
