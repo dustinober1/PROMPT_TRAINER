@@ -163,8 +163,8 @@ export default function PapersList({ onToast }: Props) {
                   )}
                 </div>
                 <p className="text-gray-600 line-clamp-2">
-                  {paper.content.substring(0, 200)}
-                  {paper.content.length > 200 && '...'}
+                  {paper.content ? paper.content.substring(0, 200) : 'No content'}
+                  {paper.content && paper.content.length > 200 && '...'}
                 </p>
               </div>
               <div className="flex flex-col items-end gap-2">
@@ -230,7 +230,7 @@ export default function PapersList({ onToast }: Props) {
             <div className="border-t border-gray-200 pt-4">
               <h3 className="font-semibold text-gray-700 mb-2">Content:</h3>
               <div className="whitespace-pre-wrap text-gray-700 bg-gray-50 p-4 rounded-md">
-                {selectedPaper.content}
+                {selectedPaper.content || 'No content provided'}
               </div>
             </div>
 

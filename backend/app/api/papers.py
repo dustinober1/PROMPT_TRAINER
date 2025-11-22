@@ -22,7 +22,7 @@ from sqlalchemy.orm import Session
 from typing import List
 from app.core.database import get_db
 from app.models.database import Paper, Rubric
-from app.schemas.paper import PaperCreate, PaperUpdate, PaperResponse, PaperList
+from app.schemas.paper import PaperCreate, PaperUpdate, PaperResponse
 from app.services.sanitization import sanitize_text
 
 # Create router for paper endpoints
@@ -90,7 +90,7 @@ async def create_paper(
     return db_paper
 
 
-@router.get("/", response_model=List[PaperList])
+@router.get("/", response_model=List[PaperResponse])
 async def list_papers(
     skip: int = 0,
     limit: int = 100,
@@ -104,7 +104,7 @@ async def list_papers(
     - limit: Maximum number of papers to return (default: 100)
 
     **Returns:**
-    - List of papers with content previews
+    - List of papers
 
     **Example:**
     ```
@@ -118,20 +118,7 @@ async def list_papers(
     # Tech Tip: offset() = skip, limit() = max results
     papers = db.query(Paper).offset(skip).limit(limit).all()
 
-    # Transform papers to include content preview
-    result = []
-    for paper in papers:
-        paper_dict = {
-            "id": paper.id,
-            "title": paper.title,
-            "rubric_id": paper.rubric_id,
-            "rubric_name": paper.rubric_name,
-            "content_preview": paper.content[:150] + "..." if len(paper.content) > 150 else paper.content,
-            "submission_date": paper.submission_date
-        }
-        result.append(PaperList(**paper_dict))
-
-    return result
+    return papers
 
 
 @router.get("/{paper_id}", response_model=PaperResponse)
