@@ -98,16 +98,42 @@ export const paperApi = {
 // Evaluation API (stubbed)
 // ============================================================================
 
+export interface EvaluationCriterionResult {
+  criterion_id?: number;
+  criterion_name?: string;
+  score?: string;
+  reasoning?: string;
+}
+
+export interface ModelResponse {
+  evaluations?: EvaluationCriterionResult[];
+  [key: string]: unknown;
+}
+
+export interface FeedbackEntry {
+  id: number;
+  evaluation_id: number;
+  rubric_id: number;
+  criterion_id?: number | null;
+  model_score: string;
+  user_corrected_score: string;
+  user_explanation?: string | null;
+  created_at: string;
+}
+
 export interface Evaluation {
   id: number;
   paper_id: number;
   paper_title?: string | null;
   rubric_id: number;
   rubric_name?: string | null;
+  rubric_scoring_type?: ScoringType | null;
   prompt_id: number;
-  model_response: any;
+  model_response: ModelResponse | string | null;
   is_correct?: boolean | null;
   created_at: string;
+  feedback?: FeedbackEntry[];
+  rubric_criteria?: Criterion[];
 }
 
 export interface EvaluationCreate {
@@ -122,12 +148,21 @@ export const evaluationApi = {
       method: 'POST',
       body: JSON.stringify(data),
     }),
+  get: (id: number) =>
+    apiFetch<Evaluation>(`/api/evaluations/${id}`),
   markCorrect: (id: number, isCorrect: boolean) =>
     apiFetch<Evaluation>(`/api/evaluations/${id}/feedback?is_correct=${isCorrect}`, {
       method: 'PATCH',
     }),
   list: (skip = 0, limit = 100) =>
     apiFetch<Evaluation[]>(`/api/evaluations/?skip=${skip}&limit=${limit}`),
+  saveFeedback: (evaluationId: number, payload: Omit<FeedbackEntry, 'id' | 'evaluation_id' | 'rubric_id' | 'created_at'>) =>
+    apiFetch<FeedbackEntry>(`/api/evaluations/${evaluationId}/feedback`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+  listFeedback: (evaluationId: number) =>
+    apiFetch<FeedbackEntry[]>(`/api/evaluations/${evaluationId}/feedback`),
 };
 
 // ============================================================================

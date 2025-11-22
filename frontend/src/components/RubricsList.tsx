@@ -48,6 +48,7 @@ export default function RubricsList() {
         setSelectedRubric(null);
       }
     } catch (err) {
+      console.error('Failed to delete rubric', err);
       alert('Failed to delete rubric');
     }
   };

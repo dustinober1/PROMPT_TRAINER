@@ -1,19 +1,16 @@
-"""
-Evaluation API Endpoints (stubbed)
-
-Creates evaluation records using papers and rubrics. If no prompt_id
-is supplied, a default prompt is created automatically.
-"""
+"""Evaluation API Endpoints (Sprint 4: results + feedback)."""
 
 import json
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 from app.core.database import get_db
-from app.models.database import Evaluation, Paper, Rubric, Prompt
+from app.models.database import Evaluation, Paper, Rubric, Prompt, Criterion, FeedbackEntry
 from app.schemas.evaluation import (
     EvaluationCreate,
     EvaluationResponse,
+    FeedbackCreate,
+    FeedbackResponse,
 )
 from app.services.model_adapter import get_adapter
 
@@ -52,6 +49,81 @@ def _build_stub_response(rubric: Rubric) -> str:
         for c in criteria
     ]
     return {"evaluations": entries}
+
+
+def _parse_model_response(model_response):
+    """Safely parse model_response stored as text into JSON/dict for responses."""
+    if isinstance(model_response, (dict, list)):
+        return model_response
+    if not model_response:
+        return None
+    try:
+        return json.loads(model_response)
+    except Exception:
+        return model_response
+
+
+def _serialize_feedback(entry: FeedbackEntry) -> dict:
+    """Shape feedback entries for API responses."""
+    return {
+        "id": entry.id,
+        "evaluation_id": entry.evaluation_id,
+        "rubric_id": entry.rubric_id,
+        "criterion_id": entry.criterion_id,
+        "model_score": entry.model_score,
+        "user_corrected_score": entry.user_corrected_score,
+        "user_explanation": entry.user_explanation,
+        "created_at": entry.created_at,
+    }
+
+
+def _serialize_evaluation(evaluation: Evaluation, include_feedback: bool = True) -> dict:
+    """Attach related names, parsed model_response, rubric criteria, and feedback."""
+    model_response = _parse_model_response(evaluation.model_response)
+    rubric = evaluation.rubric
+    paper = evaluation.paper
+    feedback_entries = evaluation.feedback_entries if include_feedback else []
+
+    criteria = []
+    if rubric:
+        criteria = [
+            {
+                "id": c.id,
+                "rubric_id": c.rubric_id,
+                "name": c.name,
+                "description": c.description,
+                "order": c.order,
+            }
+            for c in sorted(rubric.criteria, key=lambda c: c.order)
+        ]
+
+    return {
+        "id": evaluation.id,
+        "paper_id": evaluation.paper_id,
+        "paper_title": paper.title if paper else None,
+        "rubric_id": evaluation.rubric_id,
+        "rubric_name": rubric.name if rubric else None,
+        "rubric_scoring_type": rubric.scoring_type if rubric else None,
+        "prompt_id": evaluation.prompt_id,
+        "model_response": model_response,
+        "is_correct": evaluation.is_correct,
+        "created_at": evaluation.created_at,
+        "feedback": [_serialize_feedback(entry) for entry in feedback_entries],
+        "rubric_criteria": criteria,
+    }
+
+
+def _validate_corrected_score(rubric: Rubric, corrected_score: str):
+    """Ensure corrected score fits rubric scoring type (currently yes/no support)."""
+    if rubric.scoring_type == "yes_no":
+        normalized = corrected_score.strip().lower()
+        if normalized not in {"yes", "no"}:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+                detail="For yes/no rubrics, corrected score must be 'yes' or 'no'.",
+            )
+        return normalized
+    return corrected_score.strip()
 
 
 @router.post("/", response_model=EvaluationResponse, status_code=status.HTTP_201_CREATED)
@@ -118,11 +190,19 @@ async def create_evaluation(
     db.refresh(evaluation)
     db.refresh(prompt)
 
-    # Return with parsed model_response and names attached
-    evaluation.model_response = model_response
-    evaluation.paper_title = paper.title
-    evaluation.rubric_name = rubric.name
-    return evaluation
+    return _serialize_evaluation(evaluation)
+
+
+@router.get("/{evaluation_id}", response_model=EvaluationResponse)
+async def get_evaluation(
+    evaluation_id: int,
+    db: Session = Depends(get_db)
+):
+    """Fetch a single evaluation with rubric criteria and feedback."""
+    evaluation = db.query(Evaluation).filter(Evaluation.id == evaluation_id).first()
+    if not evaluation:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Evaluation not found")
+    return _serialize_evaluation(evaluation)
 
 
 @router.get("/", response_model=List[EvaluationResponse])
@@ -133,15 +213,80 @@ async def list_evaluations(
 ):
     """List evaluations with parsed model_response."""
     evaluations = db.query(Evaluation).offset(skip).limit(limit).all()
-    for ev in evaluations:
-        try:
-            ev.model_response = json.loads(ev.model_response) if ev.model_response else None
-        except Exception:
-            # leave as-is if parsing fails
-            pass
-        ev.paper_title = ev.paper.title if ev.paper else None
-        ev.rubric_name = ev.rubric.name if ev.rubric else None
-    return evaluations
+    return [_serialize_evaluation(ev) for ev in evaluations]
+
+
+@router.get("/{evaluation_id}/feedback", response_model=List[FeedbackResponse])
+async def list_feedback(
+    evaluation_id: int,
+    db: Session = Depends(get_db)
+):
+    """List feedback entries for an evaluation."""
+    evaluation = db.query(Evaluation).filter(Evaluation.id == evaluation_id).first()
+    if not evaluation:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Evaluation not found")
+    return [_serialize_feedback(entry) for entry in evaluation.feedback_entries]
+
+
+@router.post("/{evaluation_id}/feedback", response_model=FeedbackResponse, status_code=status.HTTP_201_CREATED)
+async def create_or_update_feedback(
+    evaluation_id: int,
+    payload: FeedbackCreate,
+    db: Session = Depends(get_db)
+):
+    """Create or update feedback for a specific evaluation + criterion."""
+    evaluation = db.query(Evaluation).filter(Evaluation.id == evaluation_id).first()
+    if not evaluation:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Evaluation not found")
+
+    rubric = evaluation.rubric
+    if not rubric:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Rubric not found for evaluation")
+
+    criterion: Optional[Criterion] = None
+    if payload.criterion_id is not None:
+        criterion = db.query(Criterion).filter(Criterion.id == payload.criterion_id).first()
+        if not criterion:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Criterion not found")
+        if criterion.rubric_id != rubric.id:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+                detail="Criterion does not belong to evaluation rubric",
+            )
+
+    corrected_score = _validate_corrected_score(rubric, payload.user_corrected_score)
+    existing = (
+        db.query(FeedbackEntry)
+        .filter(
+            FeedbackEntry.evaluation_id == evaluation.id,
+            FeedbackEntry.criterion_id == payload.criterion_id,
+        )
+        .first()
+    )
+
+    if existing:
+        existing.model_score = payload.model_score.strip()
+        existing.user_corrected_score = corrected_score
+        existing.user_explanation = payload.user_explanation
+        entry = existing
+    else:
+        entry = FeedbackEntry(
+            evaluation_id=evaluation.id,
+            rubric_id=rubric.id,
+            criterion_id=payload.criterion_id,
+            model_score=payload.model_score.strip(),
+            user_corrected_score=corrected_score,
+            user_explanation=payload.user_explanation,
+        )
+        db.add(entry)
+
+    # User provided corrections, so flag evaluation as incorrect unless explicitly set later
+    evaluation.is_correct = False
+
+    db.commit()
+    db.refresh(entry)
+    db.refresh(evaluation)
+    return _serialize_feedback(entry)
 
 
 @router.patch("/{evaluation_id}/feedback", response_model=EvaluationResponse)
@@ -157,10 +302,4 @@ async def update_feedback(
     evaluation.is_correct = is_correct
     db.commit()
     db.refresh(evaluation)
-    try:
-        evaluation.model_response = json.loads(evaluation.model_response) if evaluation.model_response else None
-    except Exception:
-        pass
-    evaluation.paper_title = evaluation.paper.title if evaluation.paper else None
-    evaluation.rubric_name = evaluation.rubric.name if evaluation.rubric else None
-    return evaluation
+    return _serialize_evaluation(evaluation)
