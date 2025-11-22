@@ -68,7 +68,7 @@ export default function PapersList({ onToast }: Props) {
       onToast?.('success', 'Evaluation created (stub).');
       window.dispatchEvent(new Event('evaluationCreated'));
     } catch (err) {
-      onToast?.('error', err instanceof Error ? err.message : 'Failed to create evaluation');
+      onToast?.('error', err instanceof Error ? err.message : 'Failed to create evaluation (check adapter/backend)');
     }
   };
 

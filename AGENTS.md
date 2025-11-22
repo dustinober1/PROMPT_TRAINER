@@ -93,3 +93,4 @@ I'm a product manager with limited coding experience who's looking to learn to b
 - MI-003: Adapter failures now return HTTP 502 from the evaluation API and are tested.
 - Health endpoint now includes the active adapter name; frontend shows adapter in status bar.
 - Stub evaluations include criterion names/scores and the Evaluations tab renders them per criterion.
+- Adapter configuration is documented in README under “Adapter / Model Provider Configuration” (stub default, Ollama env vars).

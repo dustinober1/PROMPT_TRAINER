@@ -65,7 +65,11 @@ function App() {
             <div className="flex items-center gap-4 text-xs text-gray-600">
               <span>http://127.0.0.1:8000</span>
               {backendAdapter && (
-                <span className="text-gray-700">Adapter: {backendAdapter}</span>
+                <span className={`px-2 py-1 rounded-full ${
+                  backendAdapter === 'ollama' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-700'
+                }`}>
+                  Adapter: {backendAdapter}
+                </span>
               )}
             </div>
           </div>

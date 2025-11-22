@@ -32,6 +32,17 @@ Prompt Trainer helps educators grade papers using AI, while continuously improvi
 
 **Next: Sprint 1 (Days 8-10)** - Frontend setup with React
 
+## Adapter / Model Provider Configuration
+
+- Defaults to stub adapter (no external calls).
+- To enable Ollama, set in `.env`:
+  ```
+  OLLAMA_ENABLED=true
+  OLLAMA_BASE_URL=http://localhost:11434
+  OLLAMA_MODEL=llama3.1:8b
+  ```
+- Health endpoint reports the active adapter; frontend status bar shows the adapter value.
+
 ## Prerequisites
 
 - Python 3.11+ ✅ (You have 3.13.5)
