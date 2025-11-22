@@ -95,6 +95,36 @@ export const paperApi = {
 };
 
 // ============================================================================
+// Evaluation API (stubbed)
+// ============================================================================
+
+export interface Evaluation {
+  id: number;
+  paper_id: number;
+  rubric_id: number;
+  prompt_id: number;
+  model_response: any;
+  is_correct?: boolean | null;
+  created_at: string;
+}
+
+export interface EvaluationCreate {
+  paper_id: number;
+  rubric_id: number;
+  prompt_id?: number;
+}
+
+export const evaluationApi = {
+  create: (data: EvaluationCreate) =>
+    apiFetch<Evaluation>('/api/evaluations/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  list: (skip = 0, limit = 100) =>
+    apiFetch<Evaluation[]>(`/api/evaluations/?skip=${skip}&limit=${limit}`),
+};
+
+// ============================================================================
 // Rubric API
 // ============================================================================
 

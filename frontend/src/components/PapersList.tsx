@@ -1,8 +1,12 @@
 import { useEffect, useState } from 'react';
-import { paperApi } from '../services/api';
+import { paperApi, evaluationApi } from '../services/api';
 import type { Paper } from '../services/api';
 
-export default function PapersList() {
+interface Props {
+  onToast?: (type: 'success' | 'error' | 'info', message: string) => void;
+}
+
+export default function PapersList({ onToast }: Props) {
   const [papers, setPapers] = useState<Paper[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -51,6 +55,19 @@ export default function PapersList() {
       }
     } catch (err) {
       alert('Failed to delete paper');
+    }
+  };
+
+  const handleEvaluate = async (paper: Paper) => {
+    if (!paper.rubric_id) {
+      onToast?.('error', 'Assign a rubric before evaluating this paper.');
+      return;
+    }
+    try {
+      await evaluationApi.create({ paper_id: paper.id, rubric_id: paper.rubric_id });
+      onToast?.('success', 'Evaluation created (stub).');
+    } catch (err) {
+      onToast?.('error', err instanceof Error ? err.message : 'Failed to create evaluation');
     }
   };
 
@@ -148,15 +165,30 @@ export default function PapersList() {
                   {paper.content.length > 200 && '...'}
                 </p>
               </div>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDelete(paper.id);
-                }}
-                className="ml-4 text-red-600 hover:text-red-800 text-sm"
-              >
-                Delete
-              </button>
+              <div className="flex flex-col items-end gap-2">
+                {paper.rubric_id ? (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEvaluate(paper);
+                    }}
+                    className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 transition"
+                  >
+                    Evaluate
+                  </button>
+                ) : (
+                  <span className="text-xs text-gray-500">Add a rubric to evaluate</span>
+                )}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDelete(paper.id);
+                  }}
+                  className="text-red-600 hover:text-red-800 text-sm"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
           </div>
         ))}

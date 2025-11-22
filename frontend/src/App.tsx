@@ -93,7 +93,7 @@ function App() {
                 <PaperForm onSuccess={handlePaperSubmitted} onToast={pushToast} />
               </div>
               <div>
-                <PapersList />
+                <PapersList onToast={pushToast} />
               </div>
             </div>
           )}
