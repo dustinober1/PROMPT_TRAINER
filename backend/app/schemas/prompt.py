@@ -12,6 +12,11 @@ class PromptCreate(BaseModel):
     is_active: bool = True
 
 
+class PromptUpdate(BaseModel):
+    template_text: Optional[str] = Field(None, min_length=1)
+    is_active: Optional[bool] = None
+
+
 class PromptResponse(BaseModel):
     id: int
     version: int

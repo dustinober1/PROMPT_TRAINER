@@ -29,6 +29,7 @@ from app.schemas.rubric import (
     CriterionUpdate,
     CriterionResponse
 )
+from app.services.sanitization import sanitize_text
 
 router = APIRouter()
 
@@ -68,8 +69,10 @@ async def create_rubric(
     """
     # Create rubric instance
     db_rubric = Rubric(
-        name=rubric.name,
-        description=rubric.description,
+        name=sanitize_text(rubric.name, "Rubric name", min_length=1, max_length=255),
+        description=sanitize_text(rubric.description, "Rubric description", min_length=0, max_length=2000)
+        if rubric.description is not None
+        else None,
         scoring_type=rubric.scoring_type
     )
 
@@ -83,8 +86,10 @@ async def create_rubric(
     for criterion_data in rubric.criteria:
         db_criterion = Criterion(
             rubric_id=db_rubric.id,
-            name=criterion_data.name,
-            description=criterion_data.description,
+            name=sanitize_text(criterion_data.name, "Criterion name", min_length=1, max_length=255),
+            description=sanitize_text(criterion_data.description, "Criterion description", min_length=0, max_length=2000)
+            if criterion_data.description is not None
+            else None,
             order=criterion_data.order
         )
         db.add(db_criterion)
@@ -204,6 +209,10 @@ async def update_rubric(
     # Update provided fields
     update_data = rubric_update.model_dump(exclude_unset=True)
     for field, value in update_data.items():
+        if field == "name":
+            value = sanitize_text(value, "Rubric name", min_length=1, max_length=255)
+        if field == "description" and value is not None:
+            value = sanitize_text(value, "Rubric description", min_length=0, max_length=2000)
         setattr(rubric, field, value)
 
     db.commit()
@@ -294,6 +303,10 @@ async def update_criterion(
     # Update provided fields
     update_data = criterion_update.model_dump(exclude_unset=True)
     for field, value in update_data.items():
+        if field == "name":
+            value = sanitize_text(value, "Criterion name", min_length=1, max_length=255)
+        if field == "description" and value is not None:
+            value = sanitize_text(value, "Criterion description", min_length=0, max_length=2000)
         setattr(criterion, field, value)
 
     db.commit()

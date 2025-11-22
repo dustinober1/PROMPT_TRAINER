@@ -25,7 +25,7 @@ def _get_or_create_default_prompt(db: Session) -> Prompt:
 
     prompt = Prompt(
         version=1,
-        template_text="Default evaluation prompt (stub)",
+        template_text="Evaluate {{paper_content}} using rubric {{rubric}}",
         parent_version_id=None,
         is_active=True,
         accuracy_rate=None,

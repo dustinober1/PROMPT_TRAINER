@@ -161,6 +161,7 @@ export default function EvaluationsList({ onToast }: Props) {
       await evaluationApi.markCorrect(selectedEvaluation.id, isCorrect);
       onToast?.('success', isCorrect ? 'Marked correct' : 'Marked incorrect');
       await fetchEvaluations(selectedEvaluation.id);
+      window.dispatchEvent(new Event('evaluationUpdated'));
     } catch (err) {
       onToast?.('error', err instanceof Error ? err.message : 'Failed to update feedback');
     } finally {
@@ -196,6 +197,7 @@ export default function EvaluationsList({ onToast }: Props) {
       });
       onToast?.('success', 'Feedback saved');
       await fetchEvaluations(selectedEvaluation.id);
+      window.dispatchEvent(new Event('evaluationUpdated'));
     } catch (err) {
       onToast?.('error', err instanceof Error ? err.message : 'Failed to save feedback');
     } finally {

@@ -23,6 +23,7 @@ from typing import List
 from app.core.database import get_db
 from app.models.database import Paper, Rubric
 from app.schemas.paper import PaperCreate, PaperUpdate, PaperResponse, PaperList
+from app.services.sanitization import sanitize_text
 
 # Create router for paper endpoints
 # Tech Tip: Routers group related endpoints together
@@ -64,10 +65,14 @@ async def create_paper(
                 detail=f"Rubric with id {paper.rubric_id} not found"
             )
 
+    # Sanitize inputs
+    title = sanitize_text(paper.title, "Title", min_length=1, max_length=255)
+    content = sanitize_text(paper.content, "Content", min_length=10, max_length=10000)
+
     # Create new Paper instance from request data
     db_paper = Paper(
-        title=paper.title,
-        content=paper.content,
+        title=title,
+        content=content,
         rubric_id=paper.rubric_id
         # submission_date and created_at are set automatically by database defaults
     )
@@ -219,6 +224,10 @@ async def update_paper(
         paper.rubric_id = rubric_id
 
     for field, value in update_data.items():
+        if field == "title":
+            value = sanitize_text(value, "Title", min_length=1, max_length=255)
+        if field == "content":
+            value = sanitize_text(value, "Content", min_length=10, max_length=10000)
         setattr(paper, field, value)
 
     # Save changes
