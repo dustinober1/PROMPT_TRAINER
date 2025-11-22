@@ -54,6 +54,7 @@ export default function PapersList({ onToast }: Props) {
         setSelectedPaper(null);
       }
     } catch (err) {
+      console.error('Failed to delete paper', err);
       alert('Failed to delete paper');
     }
   };

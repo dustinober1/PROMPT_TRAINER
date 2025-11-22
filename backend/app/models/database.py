@@ -207,7 +207,8 @@ class FeedbackEntry(Base):
 
     # Which evaluation and criterion this feedback is about
     evaluation_id = Column(Integer, ForeignKey("evaluations.id", ondelete="CASCADE"), nullable=False)
-    criterion_id = Column(Integer, ForeignKey("criteria.id"), nullable=False)
+    rubric_id = Column(Integer, ForeignKey("rubrics.id", ondelete="CASCADE"), nullable=False)
+    criterion_id = Column(Integer, ForeignKey("criteria.id"), nullable=True)
 
     # What the model said vs what the user says is correct
     model_score = Column(String(50), nullable=False)  # e.g., "yes", "no", "8"
@@ -220,6 +221,7 @@ class FeedbackEntry(Base):
 
     # Relationships
     evaluation = relationship("Evaluation", back_populates="feedback_entries")
+    criterion = relationship("Criterion")
 
     def __repr__(self):
         return f"<FeedbackEntry(id={self.id}, {self.model_score} → {self.user_corrected_score})>"

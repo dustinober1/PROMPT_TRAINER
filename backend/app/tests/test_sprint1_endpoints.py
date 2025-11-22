@@ -336,3 +336,210 @@ def test_evaluation_adapter_error(monkeypatch):
     )
     assert eval_resp.status_code == 502
     assert "Adapter failure" in eval_resp.json()["detail"]
+
+
+def test_feedback_creation_and_listing():
+    client = TestClient(app)
+
+    rubric_resp = client.post(
+        "/api/rubrics/",
+        json={
+            "name": "Essay Rubric",
+            "description": "Baseline rubric",
+            "scoring_type": "yes_no",
+            "criteria": [
+                {"name": "Thesis", "description": "Has thesis", "order": 0},
+                {"name": "Grammar", "description": "Good grammar", "order": 1},
+            ],
+        },
+    )
+    rubric = rubric_resp.json()
+    rubric_id = rubric["id"]
+    criterion_id = rubric["criteria"][0]["id"]
+
+    paper_resp = client.post(
+        "/api/papers/",
+        json={
+            "title": "Feedback Paper",
+            "content": "Some content",
+            "rubric_id": rubric_id,
+        },
+    )
+    paper_id = paper_resp.json()["id"]
+
+    eval_resp = client.post(
+        "/api/evaluations/",
+        json={"paper_id": paper_id, "rubric_id": rubric_id},
+    )
+    evaluation_id = eval_resp.json()["id"]
+
+    fb_payload = {
+        "criterion_id": criterion_id,
+        "model_score": "yes",
+        "user_corrected_score": "no",
+        "user_explanation": "Missed nuance",
+    }
+    fb_resp = client.post(f"/api/evaluations/{evaluation_id}/feedback", json=fb_payload)
+    assert fb_resp.status_code == 201
+    fb_body = fb_resp.json()
+    assert fb_body["evaluation_id"] == evaluation_id
+    assert fb_body["rubric_id"] == rubric_id
+    assert fb_body["user_corrected_score"] == "no"
+
+    list_resp = client.get(f"/api/evaluations/{evaluation_id}/feedback")
+    assert list_resp.status_code == 200
+    assert len(list_resp.json()) == 1
+
+    detail_resp = client.get(f"/api/evaluations/{evaluation_id}")
+    assert detail_resp.status_code == 200
+    detail_body = detail_resp.json()
+    assert detail_body["is_correct"] is False
+    assert len(detail_body["feedback"]) == 1
+    assert detail_body["feedback"][0]["user_explanation"] == "Missed nuance"
+    assert any(c["id"] == criterion_id for c in detail_body["rubric_criteria"])
+
+
+def test_feedback_validates_score_and_criterion():
+    client = TestClient(app)
+
+    rubric_resp = client.post(
+        "/api/rubrics/",
+        json={
+            "name": "Essay Rubric",
+            "description": "Baseline rubric",
+            "scoring_type": "yes_no",
+            "criteria": [
+                {"name": "Thesis", "description": "Has thesis", "order": 0},
+                {"name": "Grammar", "description": "Good grammar", "order": 1},
+            ],
+        },
+    )
+    rubric = rubric_resp.json()
+    rubric_id = rubric["id"]
+    criterion_id = rubric["criteria"][0]["id"]
+
+    paper_resp = client.post(
+        "/api/papers/",
+        json={
+            "title": "Feedback Paper",
+            "content": "Some content",
+            "rubric_id": rubric_id,
+        },
+    )
+    paper_id = paper_resp.json()["id"]
+
+    eval_resp = client.post(
+        "/api/evaluations/",
+        json={"paper_id": paper_id, "rubric_id": rubric_id},
+    )
+    evaluation_id = eval_resp.json()["id"]
+
+    # Invalid score for yes/no rubric
+    bad_score = client.post(
+        f"/api/evaluations/{evaluation_id}/feedback",
+        json={
+            "criterion_id": criterion_id,
+            "model_score": "yes",
+            "user_corrected_score": "maybe",
+        },
+    )
+    assert bad_score.status_code == 422
+
+    # Missing criterion
+    missing_criterion = client.post(
+        f"/api/evaluations/{evaluation_id}/feedback",
+        json={
+            "criterion_id": 9999,
+            "model_score": "yes",
+            "user_corrected_score": "no",
+        },
+    )
+    assert missing_criterion.status_code == 404
+
+    # Criterion from a different rubric should be rejected
+    other_rubric_resp = client.post(
+        "/api/rubrics/",
+        json={
+            "name": "Other Rubric",
+            "description": "Different rubric",
+            "scoring_type": "yes_no",
+            "criteria": [
+                {"name": "Structure", "description": "Structure", "order": 0},
+            ],
+        },
+    )
+    other_criterion_id = other_rubric_resp.json()["criteria"][0]["id"]
+    wrong_rubric = client.post(
+        f"/api/evaluations/{evaluation_id}/feedback",
+        json={
+            "criterion_id": other_criterion_id,
+            "model_score": "yes",
+            "user_corrected_score": "no",
+        },
+    )
+    assert wrong_rubric.status_code == 422
+
+
+def test_feedback_upsert_and_mark_correct():
+    client = TestClient(app)
+
+    rubric_resp = client.post(
+        "/api/rubrics/",
+        json={
+            "name": "Essay Rubric",
+            "description": "Baseline rubric",
+            "scoring_type": "yes_no",
+            "criteria": [
+                {"name": "Thesis", "description": "Has thesis", "order": 0},
+            ],
+        },
+    )
+    rubric = rubric_resp.json()
+    rubric_id = rubric["id"]
+    criterion_id = rubric["criteria"][0]["id"]
+
+    paper_resp = client.post(
+        "/api/papers/",
+        json={
+            "title": "Feedback Paper",
+            "content": "Some content",
+            "rubric_id": rubric_id,
+        },
+    )
+    paper_id = paper_resp.json()["id"]
+
+    eval_resp = client.post(
+        "/api/evaluations/",
+        json={"paper_id": paper_id, "rubric_id": rubric_id},
+    )
+    evaluation_id = eval_resp.json()["id"]
+
+    first = client.post(
+        f"/api/evaluations/{evaluation_id}/feedback",
+        json={
+            "criterion_id": criterion_id,
+            "model_score": "yes",
+            "user_corrected_score": "no",
+        },
+    )
+    assert first.status_code == 201
+    feedback_id = first.json()["id"]
+
+    updated = client.post(
+        f"/api/evaluations/{evaluation_id}/feedback",
+        json={
+            "criterion_id": criterion_id,
+            "model_score": "yes",
+            "user_corrected_score": "yes",
+            "user_explanation": "Updated after review",
+        },
+    )
+    assert updated.status_code == 201
+    assert updated.json()["id"] == feedback_id
+    assert updated.json()["user_corrected_score"] == "yes"
+    assert updated.json()["user_explanation"] == "Updated after review"
+
+    mark_correct = client.patch(f"/api/evaluations/{evaluation_id}/feedback?is_correct=true")
+    assert mark_correct.status_code == 200
+    assert mark_correct.json()["is_correct"] is True
+    assert len(mark_correct.json()["feedback"]) == 1
