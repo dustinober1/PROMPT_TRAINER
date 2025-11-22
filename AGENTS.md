@@ -85,3 +85,6 @@ I'm a product manager with limited coding experience who's looking to learn to b
 - Added negative tests for evaluation creation to ensure 404 responses for missing paper/rubric IDs.
 - Navigation is wired to tab state (Papers/Rubrics/Evaluations) so the header controls the active section.
 - Evaluation responses now include paper/rubric names and the frontend shows titles instead of just IDs.
+
+## Sprint 3 In-Progress
+- Progress tracked in `docs/sprint-3-progress.md` (focus: model integration, evaluation engine wiring, error handling).
