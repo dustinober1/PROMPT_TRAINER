@@ -66,6 +66,7 @@ export default function PapersList({ onToast }: Props) {
     try {
       await evaluationApi.create({ paper_id: paper.id, rubric_id: paper.rubric_id });
       onToast?.('success', 'Evaluation created (stub).');
+      window.dispatchEvent(new Event('evaluationCreated'));
     } catch (err) {
       onToast?.('error', err instanceof Error ? err.message : 'Failed to create evaluation');
     }

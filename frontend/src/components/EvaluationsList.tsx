@@ -28,6 +28,9 @@ export default function EvaluationsList({ onToast }: Props) {
 
   useEffect(() => {
     fetchEvaluations();
+    const handleEvalCreated = () => fetchEvaluations();
+    window.addEventListener('evaluationCreated', handleEvalCreated);
+    return () => window.removeEventListener('evaluationCreated', handleEvalCreated);
   }, []);
 
   const formatDate = (dateString: string) => {
