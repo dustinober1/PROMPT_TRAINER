@@ -14,7 +14,6 @@ from app.models.database import Evaluation, Paper, Rubric, Prompt
 from app.schemas.evaluation import (
     EvaluationCreate,
     EvaluationResponse,
-    EvaluationListItem,
 )
 
 router = APIRouter()
@@ -107,12 +106,18 @@ async def create_evaluation(
     return evaluation
 
 
-@router.get("/", response_model=List[EvaluationListItem])
+@router.get("/", response_model=List[EvaluationResponse])
 async def list_evaluations(
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db)
 ):
-    """List evaluations (lightweight)."""
+    """List evaluations with parsed model_response."""
     evaluations = db.query(Evaluation).offset(skip).limit(limit).all()
+    for ev in evaluations:
+        try:
+            ev.model_response = json.loads(ev.model_response) if ev.model_response else None
+        except Exception:
+            # leave as-is if parsing fails
+            pass
     return evaluations

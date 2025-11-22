@@ -80,3 +80,4 @@ I'm a product manager with limited coding experience who's looking to learn to b
 - Added toast notifications (success/error/info) in the frontend; PaperForm and RubricForm now surface status via toasts in addition to inline messages.
 - Stubbed Evaluation API (`POST /api/evaluations/`) creates evaluation records, auto-creates a default prompt if none provided, and generates a simple model_response. Covered by pytest.
 - Frontend can now trigger evaluation creation from the Papers list (uses the stubbed API); evaluate button appears when a paper has a rubric.
+- Added an Evaluations tab to list evaluation results from the backend (via evaluationApi.list()).

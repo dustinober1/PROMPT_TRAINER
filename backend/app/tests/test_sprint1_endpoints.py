@@ -194,3 +194,11 @@ def test_evaluation_creation_stub():
     assert payload["rubric_id"] == rubric_id
     assert "prompt_id" in payload
     assert payload["model_response"] is not None
+
+    # List evaluations
+    list_resp = client.get("/api/evaluations/")
+    assert list_resp.status_code == 200
+    evaluations = list_resp.json()
+    assert len(evaluations) == 1
+    assert evaluations[0]["paper_id"] == paper_id
+    assert isinstance(evaluations[0]["model_response"], dict)

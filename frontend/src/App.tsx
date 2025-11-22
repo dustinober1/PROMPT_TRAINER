@@ -4,10 +4,11 @@ import PaperForm from './components/PaperForm'
 import PapersList from './components/PapersList'
 import RubricForm from './components/RubricForm'
 import RubricsList from './components/RubricsList'
+import EvaluationsList from './components/EvaluationsList'
 import { ToastContainer } from './components/Toast'
 import { healthApi } from './services/api'
 
-type ActiveTab = 'papers' | 'rubrics';
+type ActiveTab = 'papers' | 'rubrics' | 'evaluations';
 
 function App() {
   const [backendStatus, setBackendStatus] = useState<'checking' | 'connected' | 'error'>('checking')
@@ -83,6 +84,16 @@ function App() {
               >
                 Rubrics
               </button>
+              <button
+                onClick={() => setActiveTab('evaluations')}
+                className={`pb-4 px-1 border-b-2 font-medium text-sm transition ${
+                  activeTab === 'evaluations'
+                    ? 'border-blue-600 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Evaluations
+              </button>
             </nav>
           </div>
 
@@ -108,6 +119,11 @@ function App() {
                 <RubricsList />
               </div>
             </div>
+          )}
+
+          {/* Evaluations Tab Content */}
+          {activeTab === 'evaluations' && (
+            <EvaluationsList onToast={pushToast} />
           )}
         </div>
       </main>

@@ -12,6 +12,7 @@
 - Added toast notifications (success/error/info) for paper and rubric submissions so users get immediate feedback alongside inline messages.
 - Stubbed Evaluation API (`POST /api/evaluations/`) that validates paper/rubric, auto-creates a default prompt if none exists, and returns a generated model_response; covered by pytest.
 - Frontend Papers list now exposes an Evaluate button when a rubric is assigned, calling the stubbed Evaluation API for a quick end-to-end check.
+- Evaluations tab added to the frontend to list evaluation results (uses Evaluation API list endpoint).
 
 ## Testing
 - Backend: `cd backend && source venv/bin/activate && pytest` (passes; uses temp SQLite).
