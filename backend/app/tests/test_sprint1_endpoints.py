@@ -232,6 +232,45 @@ def test_evaluation_creation_stub():
     assert "Thesis" in names and "Grammar" in names
 
 
+def test_evaluation_feedback_patch():
+    client = TestClient(app)
+
+    # seed rubric and paper
+    rubric_resp = client.post(
+        "/api/rubrics/",
+        json={
+            "name": "Essay Rubric",
+            "description": "Baseline rubric",
+            "scoring_type": "yes_no",
+            "criteria": [
+                {"name": "Thesis", "description": "Has thesis", "order": 0},
+                {"name": "Grammar", "description": "Good grammar", "order": 1},
+            ],
+        },
+    )
+    rubric_id = rubric_resp.json()["id"]
+
+    paper_resp = client.post(
+        "/api/papers/",
+        json={
+            "title": "Feedback Paper",
+            "content": "Some content",
+            "rubric_id": rubric_id,
+        },
+    )
+    paper_id = paper_resp.json()["id"]
+
+    eval_resp = client.post(
+        "/api/evaluations/",
+        json={"paper_id": paper_id, "rubric_id": rubric_id},
+    )
+    evaluation_id = eval_resp.json()["id"]
+
+    patch_resp = client.patch(f"/api/evaluations/{evaluation_id}/feedback?is_correct=true")
+    assert patch_resp.status_code == 200
+    assert patch_resp.json()["is_correct"] is True
+
+
 def test_evaluation_creation_validates_rubric_and_paper():
     client = TestClient(app)
 

@@ -43,6 +43,16 @@ export default function EvaluationsList({ onToast }: Props) {
     });
   };
 
+  const handleMark = async (id: number, isCorrect: boolean) => {
+    try {
+      await evaluationApi.markCorrect(id, isCorrect);
+      onToast?.('success', isCorrect ? 'Marked correct' : 'Marked incorrect');
+      fetchEvaluations();
+    } catch (err) {
+      onToast?.('error', err instanceof Error ? err.message : 'Failed to update feedback');
+    }
+  };
+
   if (loading) {
     return (
       <div className="bg-white rounded-lg shadow-md p-8 text-center">
@@ -117,11 +127,25 @@ export default function EvaluationsList({ onToast }: Props) {
               <div className="bg-gray-50 rounded-md p-3 text-sm text-gray-800 whitespace-pre-wrap">
                 {typeof ev.model_response === 'string'
                   ? ev.model_response
-                  : ev.model_response
-                    ? JSON.stringify(ev.model_response, null, 2)
-                    : 'No evaluation detail returned (check adapter).'}
+                : ev.model_response
+                  ? JSON.stringify(ev.model_response, null, 2)
+                  : 'No evaluation detail returned (check adapter).'}
               </div>
             )}
+            <div className="mt-3 flex gap-2">
+              <button
+                onClick={() => handleMark(ev.id, true)}
+                className="px-3 py-1 rounded-md bg-green-100 text-green-800 text-xs hover:bg-green-200"
+              >
+                Mark Correct
+              </button>
+              <button
+                onClick={() => handleMark(ev.id, false)}
+                className="px-3 py-1 rounded-md bg-red-100 text-red-800 text-xs hover:bg-red-200"
+              >
+                Mark Incorrect
+              </button>
+            </div>
           </div>
         ))}
       </div>

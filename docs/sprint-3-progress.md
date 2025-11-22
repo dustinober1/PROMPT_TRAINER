@@ -15,6 +15,8 @@
 - `PE-003`: Evaluation engine sends paper + rubric to model and stores structured response (via adapter).
 - `MI-003`: Basic error handling for model calls. ✅ Adapter failures propagate as HTTP 502 from the evaluation API and are covered by tests; health exposes adapter name.
 - Stub evaluations now include per-criterion names/scores and are rendered in the Evaluations tab; UI shows adapter badge and clearer error toasts.
+- Feedback: Evaluations tab supports “Mark Correct/Incorrect” (updates is_correct on evaluation) with toasts.
+- Prompts: Minimal prompt versioning API (create/list with parent-based version increment).
 
 ## Next Up
 - Document provider selection config (env/settings) and add README snippet. ✅ Added.

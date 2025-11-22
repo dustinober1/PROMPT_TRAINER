@@ -94,3 +94,5 @@ I'm a product manager with limited coding experience who's looking to learn to b
 - Health endpoint now includes the active adapter name; frontend shows adapter in status bar.
 - Stub evaluations include criterion names/scores and the Evaluations tab renders them per criterion.
 - Adapter configuration is documented in README under “Adapter / Model Provider Configuration” (stub default, Ollama env vars).
+- Evaluations tab includes “Mark Correct/Incorrect” actions (updates evaluation.is_correct via API).
+- Prompt API added (create/list) with parent-based version increment for manual versioning.

@@ -142,3 +142,25 @@ async def list_evaluations(
         ev.paper_title = ev.paper.title if ev.paper else None
         ev.rubric_name = ev.rubric.name if ev.rubric else None
     return evaluations
+
+
+@router.patch("/{evaluation_id}/feedback", response_model=EvaluationResponse)
+async def update_feedback(
+    evaluation_id: int,
+    is_correct: bool,
+    db: Session = Depends(get_db)
+):
+    """Update evaluation correctness (feedback)."""
+    evaluation = db.query(Evaluation).filter(Evaluation.id == evaluation_id).first()
+    if not evaluation:
+        raise HTTPException(status_code=404, detail="Evaluation not found")
+    evaluation.is_correct = is_correct
+    db.commit()
+    db.refresh(evaluation)
+    try:
+        evaluation.model_response = json.loads(evaluation.model_response) if evaluation.model_response else None
+    except Exception:
+        pass
+    evaluation.paper_title = evaluation.paper.title if evaluation.paper else None
+    evaluation.rubric_name = evaluation.rubric.name if evaluation.rubric else None
+    return evaluation

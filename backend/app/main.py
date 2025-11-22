@@ -92,7 +92,7 @@ async def health_check():
 
 
 # Include API routers
-from app.api import papers, rubrics, evaluations
+from app.api import papers, rubrics, evaluations, prompts
 
 # Papers API - CRUD operations for submitted papers
 app.include_router(papers.router, prefix="/api/papers", tags=["Papers"])
@@ -102,6 +102,9 @@ app.include_router(rubrics.router, prefix="/api/rubrics", tags=["Rubrics"])
 
 # Evaluations API - Stubbed evaluation creation
 app.include_router(evaluations.router, prefix="/api/evaluations", tags=["Evaluations"])
+
+# Prompts API - Versioned prompts
+app.include_router(prompts.router, prefix="/api/prompts", tags=["Prompts"])
 
 # Future routers:
 # from app.api import evaluations, prompts

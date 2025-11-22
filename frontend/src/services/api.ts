@@ -122,6 +122,10 @@ export const evaluationApi = {
       method: 'POST',
       body: JSON.stringify(data),
     }),
+  markCorrect: (id: number, isCorrect: boolean) =>
+    apiFetch<Evaluation>(`/api/evaluations/${id}/feedback?is_correct=${isCorrect}`, {
+      method: 'PATCH',
+    }),
   list: (skip = 0, limit = 100) =>
     apiFetch<Evaluation[]>(`/api/evaluations/?skip=${skip}&limit=${limit}`),
 };
