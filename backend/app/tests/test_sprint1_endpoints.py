@@ -8,6 +8,7 @@ from the developer's local data.
 import os
 import pytest
 from fastapi.testclient import TestClient
+from app.services.model_adapter import StubModelAdapter
 
 # Point the app at a disposable SQLite database before imports create the engine
 os.environ["DATABASE_URL"] = "sqlite:////tmp/prompt_trainer_test.db"
@@ -222,6 +223,11 @@ def test_evaluation_creation_stub():
     # Prompt stats incremented
     prompt_list = client.get("/api/evaluations/").json()
     assert prompt_list[0]["prompt_id"] > 0
+
+    # Adapter produces yes for each criterion
+    evaluations_payload = evaluations[0]["model_response"]
+    scores = [entry["score"] for entry in evaluations_payload.get("evaluations", [])]
+    assert all(score == "yes" for score in scores)
 
 
 def test_evaluation_creation_validates_rubric_and_paper():

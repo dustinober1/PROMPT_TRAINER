@@ -10,12 +10,12 @@
 - Handle model call errors gracefully (timeouts, connection issues).
 
 ## Current Scope
-- `MI-001`: Model abstraction layer.
-- `MI-002`: Ollama local model integration (stub for now).
-- `PE-003`: Evaluation engine sends paper + rubric to model and stores structured response.
-- `MI-003`: Basic error handling for model calls.
+- `MI-001`: Model abstraction layer. ✅ StubModelAdapter implemented with interface + unit tests; evaluation endpoint now calls the adapter.
+- `MI-002`: Ollama local model integration (stub/placeholder).
+- `PE-003`: Evaluation engine sends paper + rubric to model and stores structured response (via adapter).
+- `MI-003`: Basic error handling for model calls (next).
 
 ## Next Up
-- Add backend model adapter interface and stub provider.
-- Update evaluation API to use the adapter instead of inline stubs.
-- Expand pytest coverage for model-call failures and successful stub responses.
+- Add real Ollama adapter behind the same interface (MI-002).
+- Add error-handling paths/tests for adapter failures (MI-003).
+- Expose provider selection config (env/settings) to swap adapters.
