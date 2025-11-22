@@ -442,6 +442,8 @@ Prompt Trainer solves this by:
 - [ ] Basic accuracy metric
 
 **Week 11-12**: Manual Prompt Management
+- [x] Adapter layer for model providers (stub + Ollama selectable via env)
+- [x] Evaluation engine wired to adapter with error handling (HTTP 502 on failures)
 - [ ] Prompt versioning system
 - [ ] Manual prompt editor
 - [ ] Version comparison
