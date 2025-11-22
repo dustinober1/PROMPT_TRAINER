@@ -82,3 +82,4 @@ I'm a product manager with limited coding experience who's looking to learn to b
 - Frontend can now trigger evaluation creation from the Papers list (uses the stubbed API); evaluate button appears when a paper has a rubric.
 - Added an Evaluations tab to list evaluation results from the backend (via evaluationApi.list()).
 - Evaluation list auto-refreshes when a new evaluation is created (listens for `evaluationCreated` events from the Papers list).
+- Added negative tests for evaluation creation to ensure 404 responses for missing paper/rubric IDs.

@@ -14,6 +14,7 @@
 - Frontend Papers list now exposes an Evaluate button when a rubric is assigned, calling the stubbed Evaluation API for a quick end-to-end check.
 - Evaluations tab added to the frontend to list evaluation results (uses Evaluation API list endpoint).
 - Evaluations list auto-refreshes when a new evaluation is created (listens for `evaluationCreated` events).
+- Added negative-path backend tests for evaluation creation (404 on missing paper/rubric IDs) to harden validation.
 
 ## Testing
 - Backend: `cd backend && source venv/bin/activate && pytest` (passes; uses temp SQLite).
