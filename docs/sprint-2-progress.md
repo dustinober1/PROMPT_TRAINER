@@ -1,8 +1,8 @@
-# Sprint 2 Progress (Week 1)
+# Sprint 2 Progress
 
 ## Overview
-- **Status**: In progress
-- **Focus**: Paper submission UX, rubric linkage, and alignment between backend and frontend types.
+- **Status**: ✅ COMPLETE
+- **Focus**: Paper submission UX, rubric linkage, evaluation stubs, and aligned frontend/backend data.
 
 ## What Shipped
 - Papers can now be optionally associated with a rubric (`rubric_id` + `rubric_name` in responses).
@@ -17,6 +17,7 @@
 - Added negative-path backend tests for evaluation creation (404 on missing paper/rubric IDs) to harden validation.
 - Navigation is now bound to tab state (Papers/Rubrics/Evaluations) for consistent section switching.
 - Evaluation responses now include paper/rubric names; the Evaluations tab shows titles instead of just IDs.
+- Evaluations list auto-refreshes when a new evaluation is created (listens for `evaluationCreated` events).
 
 ## Testing
 - Backend: `cd backend && source venv/bin/activate && pytest` (passes; uses temp SQLite).
@@ -28,6 +29,6 @@
 - Use `VITE_API_URL` to point the frontend at the running backend (default `http://127.0.0.1:8000`).
 
 ## Next Up
-- Wire evaluation flow (paper + rubric submission to model stub).
-- Add basic toasts/notifications around form submissions.
-- Expand backend tests for additional paper/rubric edge cases.
+- Sprint 3: Model integration (Ollama/local) and real evaluation pipeline.
+- Add richer evaluation detail view and feedback entry UI.
+- Expand backend tests for additional paper/rubric/evaluation edge cases.
