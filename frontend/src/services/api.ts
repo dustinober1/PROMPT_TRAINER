@@ -95,6 +95,51 @@ export const paperApi = {
 };
 
 // ============================================================================
+// Prompt API
+// ============================================================================
+
+export interface Prompt {
+  id: number;
+  version: number;
+  template_text: string;
+  parent_version_id?: number | null;
+  created_at: string;
+  is_active: boolean;
+}
+
+export interface PromptCreate {
+  template_text: string;
+  parent_version_id?: number | null;
+  is_active?: boolean;
+}
+
+export interface PromptUpdate {
+  template_text?: string;
+  is_active?: boolean;
+}
+
+export const promptApi = {
+  list: (skip = 0, limit = 100) =>
+    apiFetch<Prompt[]>(`/api/prompts/?skip=${skip}&limit=${limit}`),
+  get: (id: number) =>
+    apiFetch<Prompt>(`/api/prompts/${id}`),
+  create: (data: PromptCreate) =>
+    apiFetch<Prompt>('/api/prompts/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  update: (id: number, data: PromptUpdate) =>
+    apiFetch<Prompt>(`/api/prompts/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+  activate: (id: number) =>
+    apiFetch<Prompt>(`/api/prompts/${id}/activate`, {
+      method: 'POST',
+    }),
+};
+
+// ============================================================================
 // Evaluation API (stubbed)
 // ============================================================================
 
@@ -268,4 +313,20 @@ export const healthApi = {
    * Check if backend is healthy
    */
   check: () => apiFetch<{ status: string; adapter?: string }>('/health'),
+};
+
+// ============================================================================
+// Metrics API
+// ============================================================================
+
+export interface AccuracyMetrics {
+  total: number;
+  correct: number;
+  accuracy_percent: number | null;
+  adapter?: string;
+  timestamp: string;
+}
+
+export const metricsApi = {
+  accuracy: () => apiFetch<AccuracyMetrics>('/api/metrics/accuracy'),
 };

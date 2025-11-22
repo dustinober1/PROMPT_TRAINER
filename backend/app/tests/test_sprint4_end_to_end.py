@@ -148,7 +148,7 @@ def test_prompt_default_creation_and_explicit_selection():
     # Create a custom prompt and ensure evaluation uses it when specified
     custom_prompt = client.post(
         "/api/prompts/",
-        json={"template_text": "Custom prompt text", "is_active": True},
+        json={"template_text": "Custom prompt text with {{paper_content}} and {{rubric}}", "is_active": True},
     )
     assert custom_prompt.status_code == 201
     custom_prompt_id = custom_prompt.json()["id"]
