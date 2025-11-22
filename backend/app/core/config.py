@@ -8,6 +8,7 @@ from pydantic import ConfigDict
 
 
 class Settings(BaseSettings):
+    model_provider: str = "stub"  # stub | ollama (future: openai/anthropic)
     ollama_enabled: bool = False
     ollama_base_url: str = "http://localhost:11434"
     ollama_model: str = "llama3.1:8b"

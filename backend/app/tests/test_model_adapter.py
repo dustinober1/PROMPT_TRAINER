@@ -1,5 +1,6 @@
 import pytest
 from app.services.model_adapter import StubModelAdapter
+from app.core.config import get_settings
 
 
 def test_stub_adapter_returns_yes_scores():
@@ -26,13 +27,14 @@ def test_stub_adapter_handles_empty_criteria():
 
 def test_get_adapter_defaults_to_stub(monkeypatch):
     monkeypatch.delenv("OLLAMA_ENABLED", raising=False)
+    monkeypatch.delenv("MODEL_PROVIDER", raising=False)
     from app.services.model_adapter import get_adapter
     adapter = get_adapter()
     assert isinstance(adapter, StubModelAdapter)
 
 
 def test_get_adapter_ollama(monkeypatch):
-    monkeypatch.setenv("OLLAMA_ENABLED", "true")
+    monkeypatch.setenv("MODEL_PROVIDER", "ollama")
     monkeypatch.setenv("OLLAMA_BASE_URL", "http://localhost:11434")
     from app.services.model_adapter import get_adapter, OllamaAdapter
     adapter = get_adapter()

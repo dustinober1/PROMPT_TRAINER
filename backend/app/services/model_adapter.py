@@ -78,9 +78,13 @@ class OllamaAdapter(ModelAdapter):
 
 
 def get_adapter(provider: Optional[str] = None) -> ModelAdapter:
-    """Select adapter based on provider or settings (OLLAMA_ENABLED)."""
+    """
+    Select adapter based on provider or settings (MODEL_PROVIDER / OLLAMA_ENABLED).
+    Priority: explicit provider arg > MODEL_PROVIDER env > OLLAMA_ENABLED flag > stub.
+    """
     settings = get_settings()
-    use_ollama = provider == "ollama" or (provider is None and settings.ollama_enabled)
+    chosen = provider or settings.model_provider
+    use_ollama = chosen == "ollama" or settings.ollama_enabled
     if use_ollama:
         return OllamaAdapter(base_url=settings.ollama_base_url, model=settings.ollama_model)
     return StubModelAdapter()

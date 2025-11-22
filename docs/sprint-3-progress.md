@@ -14,8 +14,8 @@
 - `MI-002`: Ollama local model integration. ✅ OllamaAdapter added (config via OLLAMA_ENABLED/OLLAMA_BASE_URL/OLLAMA_MODEL) with tests for adapter selection.
 - `PE-003`: Evaluation engine sends paper + rubric to model and stores structured response (via adapter).
 - `MI-003`: Basic error handling for model calls. ✅ Adapter failures propagate as HTTP 502 from the evaluation API and are covered by tests; health exposes adapter name.
-- Stub evaluations now include per-criterion names/scores and are rendered in the Evaluations tab.
+- Stub evaluations now include per-criterion names/scores and are rendered in the Evaluations tab; UI shows adapter badge and clearer error toasts.
 
 ## Next Up
-- Document provider selection config (env/settings) and add README snippet.
-- Consider a simple provider status badge in the UI header (currently shows adapter from /health).
+- Document provider selection config (env/settings) and add README snippet. ✅ Added.
+- Consider a simple provider status badge in the UI header (currently shows adapter from /health). ✅ Adapter badge added.

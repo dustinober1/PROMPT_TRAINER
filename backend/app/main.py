@@ -86,7 +86,7 @@ async def health_check():
     return {
         "status": "healthy",
         "database": "connected",
-        "adapter": "ollama" if settings.ollama_enabled else "stub",
+        "adapter": "ollama" if (settings.model_provider == "ollama" or settings.ollama_enabled) else "stub",
         "timestamp": datetime.now(timezone.utc).isoformat()
     }
 

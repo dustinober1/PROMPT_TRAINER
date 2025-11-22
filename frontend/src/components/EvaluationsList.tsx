@@ -117,7 +117,9 @@ export default function EvaluationsList({ onToast }: Props) {
               <div className="bg-gray-50 rounded-md p-3 text-sm text-gray-800 whitespace-pre-wrap">
                 {typeof ev.model_response === 'string'
                   ? ev.model_response
-                  : JSON.stringify(ev.model_response, null, 2)}
+                  : ev.model_response
+                    ? JSON.stringify(ev.model_response, null, 2)
+                    : 'No evaluation detail returned (check adapter).'}
               </div>
             )}
           </div>
