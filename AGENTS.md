@@ -96,3 +96,19 @@ I'm a product manager with limited coding experience who's looking to learn to b
 - Adapter configuration is documented in README under “Adapter / Model Provider Configuration” (stub default, Ollama env vars).
 - Evaluations tab includes “Mark Correct/Incorrect” actions (updates evaluation.is_correct via API).
 - Prompt API added (create/list) with parent-based version increment for manual versioning.
+
+## Sprint 4 Complete (Results & Feedback)
+- Backend: Enriched evaluation responses with rubric criteria and feedback arrays; feedback endpoints for per-criterion and overall corrections with validation; default prompt includes required placeholders.
+- Frontend: Evaluations tab now has master-detail view with per-criterion results and inline feedback (correct/incorrect + corrected scores/notes) with toasts and optimistic refresh.
+- Tests: Expanded end-to-end coverage for evaluation/feedback flows.
+- Docs: Added `docs/sprint-4-plan.md` and `docs/sprint-4-progress.md`.
+
+## Sprint 5 Complete (Prompt management, accuracy, sanitization)
+- Prompt management: Update/activate prompt endpoints with required placeholders and single-active enforcement; new Prompts tab with version list, editor, activate/create flows.
+- Accuracy metric: `/api/metrics/accuracy` endpoint and UI badge showing % correct and counts.
+- Sanitization: Input guards for papers, rubrics/criteria, and prompts reject script tags and enforce length.
+- Responsive/UX: Navigation supports mobile; status bar includes adapter + accuracy; prompt UI mobile-friendly.
+- Tests: Added backend coverage for prompts, metrics, and sanitization; frontend lint/build passing. Docs added `docs/sprint-5-plan.md` and `docs/sprint-5-progress.md`.
+
+## Dev Workflow Helpers
+- Added `dev.sh` to start backend (uvicorn) and frontend (Vite) together; logs to `.dev-backend.log` / `.dev-frontend.log`. Requires `backend/venv` and `frontend/node_modules` preinstalled.
